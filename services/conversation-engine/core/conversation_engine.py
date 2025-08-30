@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 import json
 import hashlib
 
-import torch
-from transformers import AutoTokenizer, AutoModel
+# import torch  # Removed for MVP - using OpenAI API instead
+# from transformers import AutoTokenizer, AutoModel
 import redis.asyncio as redis
 from sqlalchemy.ext.asyncio import AsyncSession
 

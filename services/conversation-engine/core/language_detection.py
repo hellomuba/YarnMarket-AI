@@ -8,10 +8,10 @@ import asyncio
 from typing import List, Dict, Optional, Tuple
 import logging
 
-import torch
-from transformers import AutoTokenizer, AutoModel
+# import torch  # Simplified for MVP
+# from transformers import AutoTokenizer, AutoModel
 from langdetect import detect, DetectorFactory
-import spacy
+# import spacy  # Simplified for MVP
 
 from .models import Language, LanguageContext
 from .config import Settings
@@ -93,17 +93,19 @@ class NigerianLanguageDetector:
         logger.info("🔤 Initializing Nigerian Language Detector...")
         
         try:
-            # Load multilingual BERT for Nigerian languages
-            model_name = "Davlan/bert-base-multilingual-cased-finetuned-yoruba"
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModel.from_pretrained(model_name)
+            # Load multilingual BERT for Nigerian languages (simplified for MVP)
+            # model_name = "Davlan/bert-base-multilingual-cased-finetuned-yoruba"
+            # self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+            # self.model = AutoModel.from_pretrained(model_name)
+            logger.info("⚠️ Using simplified language detection for MVP")
             
-            # Load spaCy for English processing
-            try:
-                self.nlp_en = spacy.load("en_core_web_sm")
-            except OSError:
-                logger.warning("English spaCy model not found, using basic processing")
-                self.nlp_en = None
+            # Load spaCy for English processing (simplified for MVP)
+            # try:
+            #     self.nlp_en = spacy.load("en_core_web_sm")
+            # except OSError:
+            #     logger.warning("English spaCy model not found, using basic processing")
+            #     self.nlp_en = None
+            self.nlp_en = None  # Simplified for MVP
             
             logger.info("✅ Language detector initialized successfully")
             

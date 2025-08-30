@@ -53,7 +53,7 @@ class WhatsAppMessage(BaseModel):
     audio_url: Optional[str] = None
     image_url: Optional[str] = None
     document_url: Optional[str] = None
-    
+
     class Config:
         populate_by_name = True
 
@@ -89,20 +89,20 @@ class MerchantSettings(BaseModel):
     business_name: str
     business_type: str
     phone_number: str
-    
+
     # Pricing rules
     min_discount_percentage: float = 0.0
     max_discount_percentage: float = 20.0
     negotiation_enabled: bool = True
     bulk_discount_threshold: int = 10
     bulk_discount_percentage: float = 5.0
-    
+
     # Conversation settings
     greeting_message: Optional[str] = None
     farewell_message: Optional[str] = None
     business_hours: Dict[str, Any] = {}
     auto_responses: Dict[str, str] = {}
-    
+
     # AI behavior
     personality_traits: Dict[str, float] = {
         "friendliness": 0.8,
@@ -110,7 +110,7 @@ class MerchantSettings(BaseModel):
         "persistence": 0.7,
         "humor": 0.6
     }
-    
+
     # Languages
     supported_languages: List[Language] = [Language.PIDGIN, Language.ENGLISH]
     primary_language: Language = Language.PIDGIN
@@ -137,27 +137,28 @@ class ConversationResponse(BaseModel):
     text: str
     language: Language
     message_type: MessageType = MessageType.TEXT
-    
+
     # Interactive elements
     quick_replies: List[QuickReply] = []
     buttons: List[Dict[str, Any]] = []
-    
+
     # Media
     image_url: Optional[str] = None
     audio_url: Optional[str] = None
-    
+
     # Metadata
     confidence: float = Field(ge=0.0, le=1.0)
     intent_type: ConversationType
     requires_human: bool = False
-    
+
     # Business context
     mentioned_products: List[str] = []
     price_mentioned: Optional[float] = None
     negotiation_stage: Optional[str] = None
-    
+
     # Tracking
-    response_id: str = Field(default_factory=lambda: f"resp_{datetime.utcnow().timestamp()}")
+    response_id: str = Field(
+        default_factory=lambda: f"resp_{datetime.utcnow().timestamp()}")
     generated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -172,11 +173,11 @@ class NegotiationState(BaseModel):
     urgency_level: float = 0.0  # 0 to 1
     bundle_suggested: bool = False
     stalling_count: int = 0
-    
+
     # History
     offer_history: List[Dict[str, Any]] = []
     started_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     def add_offer(self, offer: float, sender: str, response: Optional[str] = None):
         """Add an offer to the negotiation history"""
         self.offer_history.append({
@@ -193,7 +194,7 @@ class Intent(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     language: Language
     entities: Dict[str, Any] = {}
-    
+
     # Extracted information
     product_names: List[str] = []
     price_mentioned: Optional[float] = None
@@ -208,7 +209,7 @@ class LanguageContext(BaseModel):
     secondary_language: Optional[Language] = None
     code_switching: bool = False
     confidence: float = Field(ge=0.0, le=1.0)
-    
+
     # Cultural markers
     greeting_type: Optional[str] = None
     formality_level: float = 0.5  # 0 = very informal, 1 = very formal
@@ -222,17 +223,17 @@ class ConversationMetrics(BaseModel):
     conversion_rate: float
     average_response_time: float
     customer_satisfaction: float
-    
+
     # Language distribution
     language_distribution: Dict[Language, int]
-    
+
     # Intent distribution
     intent_distribution: Dict[ConversationType, int]
-    
+
     # Time-based metrics
     peak_hours: Dict[str, int]
     conversation_duration_avg: float
-    
+
     # Business metrics
     total_revenue: float
     average_order_value: float

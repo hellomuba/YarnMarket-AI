@@ -8,11 +8,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --omit=dev
+# Install dependencies (including dev dependencies for building)
+RUN npm install
 
 # Copy application code
 COPY . .
+
+# Build the application
+RUN npm run build
+
+# Remove dev dependencies
+RUN npm prune --omit=dev
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs

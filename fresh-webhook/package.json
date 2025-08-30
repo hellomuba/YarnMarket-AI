@@ -1,0 +1,15 @@
+{
+  "name": "yarnmarket-ai-webhook",
+  "version": "1.0.0",
+  "description": "YarnMarket AI WhatsApp Webhook with Cultural Intelligence and Haggling",
+  "main": "api/webhook.js",
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "openai": "^4.20.1"
+  },
+  "scripts": {
+    "start": "node api/webhook.js"
+  }
+}

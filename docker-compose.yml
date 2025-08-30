@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: yarnmarket
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -16,7 +16,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6380:6379"
+      - "6381:6379"
     volumes:
       - redis_data:/data
 
@@ -27,7 +27,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: yarnmarket
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     ports:
-      - "27018:27017"
+      - "27019:27017"
     volumes:
       - mongodb_data:/data/db
 
@@ -35,8 +35,8 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     ports:
-      - "8124:8123"
-      - "9001:9000"
+      - "8125:8123"
+      - "9002:9000"
     volumes:
       - clickhouse_data:/var/lib/clickhouse
 
@@ -47,8 +47,8 @@ services:
       RABBITMQ_DEFAULT_USER: yarnmarket
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5673:5672"
+      - "15673:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
@@ -93,7 +93,7 @@ services:
       context: ./services/merchant-api
       dockerfile: Dockerfile
     ports:
-      - "3004:3001"
+      - "3005:3001"
     environment:
       - DATABASE_URL=postgresql://yarnmarket:${POSTGRES_PASSWORD}@postgres:5432/yarnmarket
       - REDIS_URL=redis://redis:6379
@@ -120,7 +120,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9091:9090"
+      - "9092:9090"
     volumes:
       - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -132,7 +132,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3003:3000"
+      - "3004:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:

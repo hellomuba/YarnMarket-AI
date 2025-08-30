@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     
     # Database URLs
     database_url: str = Field(
-        default="postgresql://yarnmarket:password@localhost:5432/yarnmarket",
+        default="postgresql://yarnmarket:yarnmarket_db_2024@localhost:5432/yarnmarket",
         description="PostgreSQL database URL"
     )
     redis_url: str = Field(

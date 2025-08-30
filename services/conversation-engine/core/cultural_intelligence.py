@@ -8,6 +8,9 @@ import re
 from typing import Dict, List, Optional, Any
 from datetime import datetime, time
 import logging
+import asyncio
+
+from openai import AsyncOpenAI
 
 from .models import Language, Product, MerchantSettings, NegotiationState
 from .config import Settings
@@ -22,6 +25,7 @@ class CulturalIntelligence:
     
     def __init__(self, settings: Settings):
         self.settings = settings
+        self.openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
         
         # Nigerian market greeting templates by time and language
         self.greeting_templates = {
@@ -452,7 +456,7 @@ class CulturalIntelligence:
         personality: Dict[str, float]
     ) -> str:
         """
-        Generate general conversational response
+        Generate general conversational response using OpenAI
         """
         friendliness = personality.get("friendliness", 0.8)
         humor = personality.get("humor", 0.6)
@@ -478,23 +482,34 @@ class CulturalIntelligence:
             else:
                 return "Yes! We offer delivery within Lagos. Delivery fee ranges from ₦500 to ₦2000 depending on location."
         
-        # Default friendly response
-        if language == Language.PIDGIN:
-            responses = [
-                "I hear you well well! Anything else I fit do for you?",
-                "That's true o! How we fit help you more?",
-                "Okay na! Wetin else you need from us?",
-                "I understand! Any other thing?"
-            ]
-        else:
-            responses = [
-                "I understand! How else can I help you?",
-                "That makes sense! What else can I do for you?",
-                "I see! Is there anything else you need?",
-                "Got it! Any other questions?"
-            ]
-        
-        return random.choice(responses)
+        # Use OpenAI for more complex conversational responses
+        try:
+            return await self._generate_openai_response(
+                customer_message=customer_message,
+                language=language,
+                business_context=business_context,
+                personality=personality,
+                response_type="general_chat"
+            )
+        except Exception as e:
+            logger.error(f"OpenAI API error: {str(e)}")
+            # Fallback to template responses
+            if language == Language.PIDGIN:
+                responses = [
+                    "I hear you well well! Anything else I fit do for you?",
+                    "That's true o! How we fit help you more?",
+                    "Okay na! Wetin else you need from us?",
+                    "I understand! Any other thing?"
+                ]
+            else:
+                responses = [
+                    "I understand! How else can I help you?",
+                    "That makes sense! What else can I do for you?",
+                    "I see! Is there anything else you need?",
+                    "Got it! Any other questions?"
+                ]
+            
+            return random.choice(responses)
     
     async def generate_no_products_response(
         self,
@@ -515,6 +530,92 @@ class CulturalIntelligence:
             response += "Or let me show you similar items we have in stock? They might be even better!"
         
         return response
+    
+    async def _generate_openai_response(
+        self,
+        customer_message: str,
+        language: Language,
+        business_context: str,
+        personality: Dict[str, float],
+        response_type: str = "general_chat"
+    ) -> str:
+        """
+        Generate culturally appropriate responses using OpenAI API
+        """
+        # Determine language setting
+        language_setting = "Nigerian Pidgin English" if language == Language.PIDGIN else "English"
+        
+        # Build personality context
+        personality_desc = []
+        if personality.get("friendliness", 0.5) > 0.7:
+            personality_desc.append("very friendly and warm")
+        if personality.get("humor", 0.5) > 0.6:
+            personality_desc.append("uses gentle humor")
+        if personality.get("patience", 0.5) > 0.7:
+            personality_desc.append("very patient and understanding")
+        
+        personality_context = ", ".join(personality_desc) if personality_desc else "professional and helpful"
+        
+        # Build context-specific prompt based on response type
+        if response_type == "general_chat":
+            system_prompt = f"""You are a Nigerian market vendor assistant for a {business_context} business. 
+            You should respond in {language_setting} with authentic Nigerian market conversation style.
+            Your personality is {personality_context}.
+            Keep responses concise (1-2 sentences), culturally authentic, and helpful.
+            Use appropriate Nigerian expressions and market vendor communication style.
+            Always maintain a helpful, business-focused tone while being conversational."""
+        
+        elif response_type == "product_inquiry":
+            system_prompt = f"""You are a Nigerian market vendor specializing in {business_context}. 
+            Respond in {language_setting} with enthusiasm about your products.
+            Your personality is {personality_context}.
+            Be persuasive but authentic, highlighting product quality and value.
+            Use Nigerian market vendor sales techniques and expressions.
+            Keep response focused and under 3 sentences."""
+            
+        elif response_type == "negotiation":
+            system_prompt = f"""You are an experienced Nigerian market vendor in {business_context}. 
+            Respond in {language_setting} with authentic Nigerian haggling style.
+            Your personality is {personality_context}.
+            Be firm but fair in negotiations, using cultural negotiation tactics.
+            Show respect for the customer while protecting your business interests.
+            Keep response under 2 sentences."""
+        
+        else:
+            system_prompt = f"""You are a helpful Nigerian market vendor assistant. 
+            Respond in {language_setting} with authentic Nigerian communication style.
+            Your personality is {personality_context}.
+            Be helpful, culturally appropriate, and business-focused."""
+
+        try:
+            response = await self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": customer_message}
+                ],
+                max_tokens=150,
+                temperature=0.8,
+                presence_penalty=0.1,
+                frequency_penalty=0.1
+            )
+            
+            generated_text = response.choices[0].message.content.strip()
+            
+            # Clean up response
+            if generated_text:
+                # Remove quotation marks if present
+                generated_text = generated_text.strip('"\'')
+                # Ensure proper punctuation
+                if generated_text and not generated_text[-1] in '.!?':
+                    generated_text += '!'
+                return generated_text
+            else:
+                raise Exception("Empty response from OpenAI")
+                
+        except Exception as e:
+            logger.error(f"OpenAI API error: {str(e)}")
+            raise e
     
     def _format_currency(self, amount: float) -> str:
         """Format currency in Nigerian Naira"""
