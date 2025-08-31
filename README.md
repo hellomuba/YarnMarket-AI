@@ -40,7 +40,7 @@ yarnmarket-ai/
 1. **Setup Environment**:
    ```bash
    # Clone and setup
-   git clone <repository>
+   git clone https://github.com/hellomuba/YarnMarket-AI
    cd yarnmarket-ai
    
    # Install dependencies
