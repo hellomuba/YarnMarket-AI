@@ -54,7 +54,9 @@ services:
 
   # WhatsApp Webhook Handler (Go)
   webhook-handler:
-    image: hellomuba/webhook-handler:latest
+    build:
+      context: ./services/webhook-handler
+      dockerfile: Dockerfile
     ports:
       - "8082:8080"
     environment:
@@ -68,7 +70,9 @@ services:
 
   # Conversation Engine (Python FastAPI)
   conversation-engine:
-    image: hellomuba/conversation-engine:latest
+    build:
+      context: ./services/conversation-engine
+      dockerfile: Dockerfile
     ports:
       - "8003:8001"
     environment:
@@ -85,7 +89,9 @@ services:
 
   # Merchant API (NestJS)
   merchant-api:
-    image: hellomuba/merchant-api:latest
+    build:
+      context: ./services/merchant-api
+      dockerfile: Dockerfile
     ports:
       - "3005:3001"
     environment:
@@ -98,7 +104,9 @@ services:
 
   # Analytics Service (Python)
   analytics-service:
-    image: hellomuba/analytics-service:latest
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
     ports:
       - "8004:8002"
     environment:
