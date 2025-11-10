@@ -8,11 +8,11 @@ const languageRegions = [
   },
   {
     region: "Asian Languages",
-    languages: ["Mandarin", "Japanese", "Korean", "Hindi", "Arabic", "Thai", "Vietnamese", "Indonesian"]
+    languages: ["Chinese (Simplified & Traditional)", "Japanese", "Korean", "Thai", "Vietnamese", "Indonesian", "Hindi", "Arabic"]
   },
   {
-    region: "Americas & Others",
-    languages: ["Brazilian Portuguese", "Mexican Spanish", "Canadian French", "Turkish", "Hebrew", "Swedish"]
+    region: "And Many More",
+    languages: ["Turkish", "Hebrew", "Greek", "Swedish", "Danish", "Norwegian", "Finnish", "Czech", "Hungarian"]
   }
 ];
 
@@ -23,18 +23,18 @@ export const Languages = () => {
         <div className="max-w-3xl mx-auto text-center mb-16 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-card border border-border mb-6">
             <Globe size={16} className="text-primary" />
-            <span className="text-sm font-medium">Global Reach</span>
+            <span className="text-sm font-medium">Global Communication</span>
           </div>
           
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Speak Your Customer's
+            Speak Your Customers'
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
-              Native Language
+              Language, Anywhere
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Connect with customers worldwide in their preferred language. 
-            Real-time translation and localization powered by advanced AI.
+            Break down language barriers and connect with customers worldwide. 
+            Our AI automatically detects and responds in 100+ languages.
           </p>
         </div>
 
@@ -60,13 +60,8 @@ export const Languages = () => {
 
         <div className="mt-16 text-center">
           <p className="text-muted-foreground text-lg mb-6">
-            And many more languages being added continuously
+            100+ languages supported — from major markets to emerging regions, we've got you covered
           </p>
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 border border-primary/20">
-            <span className="text-primary font-semibold">50+ Languages</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">100+ Dialects</span>
-          </div>
         </div>
       </div>
     </section>

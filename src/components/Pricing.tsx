@@ -5,32 +5,34 @@ import { Check } from "lucide-react";
 const plans = [
   {
     name: "Starter",
-    price: "$49",
+    price: "$29",
     period: "/month",
     description: "Perfect for small businesses getting started",
     features: [
       "Up to 1,000 conversations/month",
-      "10 languages",
+      "2 team members",
+      "Email & chat support",
       "Basic analytics",
-      "Email support",
-      "Standard integrations"
+      "WhatsApp & web chat",
+      "100+ languages"
     ],
     cta: "Start Free Trial",
     popular: false
   },
   {
     name: "Professional",
-    price: "$199",
+    price: "$99",
     period: "/month",
-    description: "Ideal for growing e-commerce businesses",
+    description: "For growing businesses with higher volume",
     features: [
       "Up to 10,000 conversations/month",
-      "All 50+ languages",
-      "Advanced analytics & insights",
-      "Priority support (24/7)",
-      "All integrations",
-      "Custom branding",
-      "API access"
+      "10 team members",
+      "Priority support",
+      "Advanced analytics & reports",
+      "All messaging channels",
+      "Custom AI training",
+      "API access",
+      "Shopify & WooCommerce integration"
     ],
     cta: "Start Free Trial",
     popular: true
@@ -42,13 +44,13 @@ const plans = [
     description: "For large-scale operations",
     features: [
       "Unlimited conversations",
-      "All languages + custom",
-      "Enterprise analytics",
+      "Unlimited team members",
       "Dedicated account manager",
       "Custom integrations",
-      "White-label solution",
       "SLA guarantee",
-      "Advanced security"
+      "Advanced security & compliance",
+      "White-label options",
+      "Custom AI models"
     ],
     cta: "Contact Sales",
     popular: false
@@ -67,7 +69,7 @@ export const Pricing = () => {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Choose the perfect plan for your business. All plans include a 14-day free trial.
+            Start free, scale as you grow. No hidden fees, cancel anytime.
           </p>
         </div>
 
@@ -121,7 +123,7 @@ export const Pricing = () => {
         </div>
 
         <div className="mt-12 text-center text-muted-foreground">
-          <p>All plans include SSL encryption, GDPR compliance, and regular updates.</p>
+          <p>All plans include 14-day free trial • No credit card required</p>
         </div>
       </div>
     </section>

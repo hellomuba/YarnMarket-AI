@@ -1,36 +1,36 @@
 import { Card } from "@/components/ui/card";
-import { ShoppingCart, Webhook, Database, Mail, CreditCard, Package } from "lucide-react";
+import { ShoppingCart, Package, CreditCard, MessageCircle, Instagram, Facebook } from "lucide-react";
 
 const integrations = [
   {
+    icon: MessageCircle,
+    name: "WhatsApp Business",
+    description: "Connect your WhatsApp Business account and manage all conversations in one place"
+  },
+  {
+    icon: Instagram,
+    name: "Instagram",
+    description: "Respond to Instagram DMs and comments automatically with AI"
+  },
+  {
+    icon: Facebook,
+    name: "Facebook Messenger",
+    description: "Integrate Facebook Messenger for seamless customer communication"
+  },
+  {
     icon: ShoppingCart,
     name: "Shopify",
-    description: "Seamless integration with your Shopify store"
+    description: "Sync products, orders, and customer data directly from your Shopify store"
   },
   {
     icon: Package,
     name: "WooCommerce",
-    description: "Connect your WooCommerce platform"
+    description: "Connect your WooCommerce store and automate order updates and support"
   },
   {
     icon: CreditCard,
     name: "Stripe",
-    description: "Payment processing made simple"
-  },
-  {
-    icon: Mail,
-    name: "Mailchimp",
-    description: "Email marketing automation"
-  },
-  {
-    icon: Database,
-    name: "Salesforce",
-    description: "CRM integration for better insights"
-  },
-  {
-    icon: Webhook,
-    name: "Custom APIs",
-    description: "Connect any service via webhooks"
+    description: "Process payments and manage transactions directly in chat conversations"
   }
 ];
 
@@ -40,14 +40,13 @@ export const Integrations = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center mb-16 animate-fade-in">
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Integrates With
+            Connect Your Favorite
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
-              Your Favorite Tools
+              Tools & Platforms
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Connect ConvoRetail with your existing tech stack in minutes. 
-            No complex setup required.
+            Works with all the tools you already use. Set up in minutes, not hours.
           </p>
         </div>
 

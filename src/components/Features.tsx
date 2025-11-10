@@ -1,36 +1,36 @@
-import { MessageCircle, Zap, Shield, TrendingUp, Users, Bot } from "lucide-react";
+import { MessageSquare, Globe, Zap, Shield, BarChart3, Headphones } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const features = [
   {
-    icon: MessageCircle,
-    title: "Intelligent Conversations",
-    description: "AI-powered chatbots that understand context and provide human-like interactions in any language."
+    icon: MessageSquare,
+    title: "Omnichannel Inbox",
+    description: "Manage all customer conversations from WhatsApp, Instagram, Facebook, and website chat in one unified inbox."
+  },
+  {
+    icon: Globe,
+    title: "100+ Languages",
+    description: "Communicate with customers in their native language. Automatic translation and language detection powered by AI."
   },
   {
     icon: Zap,
-    title: "Lightning Fast",
-    description: "Real-time responses with sub-second latency. Keep your customers engaged without waiting."
+    title: "Instant Responses",
+    description: "AI-powered chatbots handle common queries instantly, reducing response time from hours to seconds."
   },
   {
     icon: Shield,
-    title: "Enterprise Security",
-    description: "Bank-level encryption and compliance with GDPR, SOC2, and industry standards."
+    title: "Smart Product Recommendations",
+    description: "AI suggests relevant products based on customer conversations, increasing average order value by up to 30%."
   },
   {
-    icon: TrendingUp,
-    title: "Sales Analytics",
-    description: "Deep insights into customer behavior, conversion rates, and revenue optimization."
+    icon: BarChart3,
+    title: "Analytics & Insights",
+    description: "Track conversation metrics, customer satisfaction, sales conversions, and team performance in real-time."
   },
   {
-    icon: Users,
-    title: "Customer Engagement",
-    description: "Personalized experiences that increase satisfaction and build lasting relationships."
-  },
-  {
-    icon: Bot,
-    title: "Auto-Learning AI",
-    description: "Continuously improves from every interaction to deliver better results over time."
+    icon: Headphones,
+    title: "Live Chat Handoff",
+    description: "Seamlessly transfer from AI to human agents when needed. Keep context and conversation history intact."
   }
 ];
 
@@ -42,11 +42,11 @@ export const Features = () => {
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
             Everything You Need to
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
-              Scale Your Retail Business
+              Scale Customer Support
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Powerful features designed to transform how you engage with customers
+            From small businesses to enterprise retailers, our platform grows with you
           </p>
         </div>
 

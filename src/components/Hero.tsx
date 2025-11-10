@@ -26,32 +26,32 @@ export const Hero = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-card border border-border mb-8">
             <MessageSquare size={16} className="text-primary" />
-            <span className="text-sm font-medium">Multilingual AI-Powered Conversations</span>
+            <span className="text-sm font-medium">AI-Powered Customer Engagement Platform</span>
           </div>
 
           {/* Main Heading */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            Transform Your Retail
+            Sell More With
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
-              With Smart Conversations
+              Multilingual AI Chat
             </span>
           </h1>
 
           {/* Description */}
           <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-            The ultimate multilingual conversational platform for retail and e-commerce. 
-            Engage customers in their language, automate support, and drive sales with 
-            AI-powered chat experiences.
+            Connect with customers in any language, automate support 24/7, and boost sales with 
+            intelligent conversations. One platform for WhatsApp, Instagram, Facebook Messenger, 
+            and your website chat.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Button size="lg" className="bg-gradient-primary hover:opacity-90 transition-opacity text-lg px-8 py-6 shadow-glow group">
-              Start Free Trial
+              Get Started Free
               <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2">
-              Watch Demo
+              Book a Demo
             </Button>
           </div>
 
@@ -61,12 +61,12 @@ export const Hero = () => {
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Globe className="text-primary" size={24} />
               </div>
-              <div className="text-3xl font-bold mb-1">50+</div>
+              <div className="text-3xl font-bold mb-1">100+</div>
               <div className="text-sm text-muted-foreground">Languages Supported</div>
             </div>
             <div className="p-6 rounded-2xl bg-gradient-card border border-border backdrop-blur-sm">
-              <div className="text-3xl font-bold mb-1">99.9%</div>
-              <div className="text-sm text-muted-foreground">Uptime Guarantee</div>
+              <div className="text-3xl font-bold mb-1">5min</div>
+              <div className="text-sm text-muted-foreground">Setup Time</div>
             </div>
             <div className="p-6 rounded-2xl bg-gradient-card border border-border backdrop-blur-sm">
               <div className="text-3xl font-bold mb-1">24/7</div>
