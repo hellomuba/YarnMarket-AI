@@ -32,7 +32,7 @@ export const Languages = () => {
               Language, Anywhere
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-muted-foreground mb-12">
             Break down language barriers and connect with customers worldwide. 
             Our AI automatically detects and responds in 100+ languages.
           </p>
