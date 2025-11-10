@@ -20,13 +20,13 @@ export const Languages = () => {
   return (
     <section id="languages" className="py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center mb-16 animate-fade-in">
+        <div className="max-w-3xl mx-auto text-center mb-20 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-card border border-border mb-6">
             <Globe size={16} className="text-primary" />
             <span className="text-sm font-medium">Global Communication</span>
           </div>
           
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
             Speak Your Customers'
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
               Language, Anywhere
