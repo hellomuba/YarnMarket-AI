@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Navbar = () => {
@@ -34,10 +35,14 @@ export const Navbar = () => {
 
           <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
-            <Button variant="ghost">Sign In</Button>
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
-              Get Started
-            </Button>
+            <Link to="/signup">
+              <Button variant="ghost">Sign In</Button>
+            </Link>
+            <Link to="/signup">
+              <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+                Start Free Now
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -69,10 +74,14 @@ export const Navbar = () => {
                 <div className="flex justify-center mb-2">
                   <ThemeToggle />
                 </div>
-                <Button variant="ghost" className="w-full">Sign In</Button>
-                <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
-                  Get Started
-                </Button>
+                <Link to="/signup" className="w-full">
+                  <Button variant="ghost" className="w-full">Sign In</Button>
+                </Link>
+                <Link to="/signup" className="w-full">
+                  <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+                    Start Free Now
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
