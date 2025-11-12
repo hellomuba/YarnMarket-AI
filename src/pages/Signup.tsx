@@ -4,12 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
 
 const Signup = () => {
   const [activeTab, setActiveTab] = useState<"signup" | "signin">("signup");
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <>
+      <Navbar />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 pt-24">
       <Card className="w-full max-w-md shadow-elegant">
         <CardHeader className="text-center space-y-2">
           <div className="flex justify-center mb-2">
@@ -124,6 +127,7 @@ const Signup = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 
