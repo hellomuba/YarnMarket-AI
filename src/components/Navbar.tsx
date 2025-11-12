@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,6 +33,7 @@ export const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
             <Button variant="ghost">Sign In</Button>
             <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
               Get Started
@@ -64,6 +66,9 @@ export const Navbar = () => {
                 Pricing
               </a>
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                <div className="flex justify-center mb-2">
+                  <ThemeToggle />
+                </div>
                 <Button variant="ghost" className="w-full">Sign In</Button>
                 <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
                   Get Started
