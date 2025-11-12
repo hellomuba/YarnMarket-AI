@@ -3,16 +3,12 @@ import { Card } from "@/components/ui/card";
 
 const languageRegions = [
   {
-    region: "European Languages",
-    languages: ["English", "Spanish", "French", "German", "Italian", "Portuguese", "Dutch", "Polish", "Russian"]
+    region: "Primary Language",
+    languages: ["English"]
   },
   {
-    region: "Asian Languages",
-    languages: ["Chinese (Simplified & Traditional)", "Japanese", "Korean", "Thai", "Vietnamese", "Indonesian", "Hindi", "Arabic"]
-  },
-  {
-    region: "And Many More",
-    languages: ["Turkish", "Hebrew", "Greek", "Swedish", "Danish", "Norwegian", "Finnish", "Czech", "Hungarian"]
+    region: "Nigerian Languages",
+    languages: ["Pidgin", "Yoruba", "Hausa", "Igbo"]
   }
 ];
 
@@ -33,12 +29,12 @@ export const Languages = () => {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground mb-12">
-            Break down language barriers and connect with customers worldwide. 
-            Our AI automatically detects and responds in 100+ languages.
+            Break down language barriers and connect with customers across Nigeria. 
+            Our AI automatically detects and responds in English and major Nigerian languages.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {languageRegions.map((region, index) => (
             <Card 
               key={index}
@@ -60,7 +56,7 @@ export const Languages = () => {
 
         <div className="mt-16 text-center">
           <p className="text-muted-foreground text-lg mb-6">
-            100+ languages supported — from major markets to emerging regions, we've got you covered
+            5 languages supported — covering English and Nigeria's most widely spoken languages
           </p>
         </div>
       </div>
