@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 const plans = [
   {
     name: "Starter",
-    price: "$29",
+    price: "N19,500",
     period: "/month",
     description: "Perfect for small businesses getting started",
     features: [
@@ -14,14 +14,14 @@ const plans = [
       "Email & chat support",
       "Basic analytics",
       "WhatsApp & web chat",
-      "100+ languages"
+      "100+ languages",
     ],
     cta: "Start Free Trial",
-    popular: false
+    popular: false,
   },
   {
     name: "Professional",
-    price: "$99",
+    price: "N55,000",
     period: "/month",
     description: "For growing businesses with higher volume",
     features: [
@@ -32,10 +32,10 @@ const plans = [
       "All messaging channels",
       "Custom AI training",
       "API access",
-      "Shopify & WooCommerce integration"
+      "Shopify & WooCommerce integration",
     ],
     cta: "Start Free Trial",
-    popular: true
+    popular: true,
   },
   {
     name: "Enterprise",
@@ -50,11 +50,11 @@ const plans = [
       "SLA guarantee",
       "Advanced security & compliance",
       "White-label options",
-      "Custom AI models"
+      "Custom AI models",
     ],
     cta: "Contact Sales",
-    popular: false
-  }
+    popular: false,
+  },
 ];
 
 export const Pricing = () => {
@@ -64,7 +64,7 @@ export const Pricing = () => {
         <div className="max-w-3xl mx-auto text-center mb-16 animate-fade-in">
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
             Simple, Transparent
-            <span className="block bg-gradient-primary bg-clip-text text-transparent">
+            <span className="block bg-gradient-primary bg-clip-text text-transparent pb-4">
               Pricing
             </span>
           </h2>
@@ -75,12 +75,12 @@ export const Pricing = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
-            <Card 
+            <Card
               key={index}
               className={`p-8 relative overflow-hidden transition-all duration-300 animate-fade-in ${
-                plan.popular 
-                  ? 'border-2 border-primary shadow-glow scale-105 lg:scale-110 bg-gradient-card' 
-                  : 'border-border bg-card hover:shadow-card'
+                plan.popular
+                  ? "border-2 border-primary shadow-glow scale-105 lg:scale-110 bg-gradient-card"
+                  : "border-border bg-card hover:shadow-card"
               }`}
               style={{ animationDelay: `${index * 0.15}s` }}
             >
@@ -92,18 +92,20 @@ export const Pricing = () => {
 
               <div className="mb-6">
                 <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
+                <p className="text-muted-foreground text-sm mb-4">
+                  {plan.description}
+                </p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-5xl font-bold">{plan.price}</span>
                   <span className="text-muted-foreground">{plan.period}</span>
                 </div>
               </div>
 
-              <Button 
+              <Button
                 className={`w-full mb-8 ${
-                  plan.popular 
-                    ? 'bg-gradient-primary hover:opacity-90' 
-                    : 'bg-primary hover:bg-primary/90'
+                  plan.popular
+                    ? "bg-gradient-primary hover:opacity-90"
+                    : "bg-primary hover:bg-primary/90"
                 }`}
                 size="lg"
               >
@@ -113,8 +115,13 @@ export const Pricing = () => {
               <ul className="space-y-4">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start gap-3">
-                    <Check className="text-primary flex-shrink-0 mt-0.5" size={20} />
-                    <span className="text-sm text-muted-foreground">{feature}</span>
+                    <Check
+                      className="text-primary flex-shrink-0 mt-0.5"
+                      size={20}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {feature}
+                    </span>
                   </li>
                 ))}
               </ul>

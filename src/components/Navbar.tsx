@@ -13,7 +13,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              ConvoRetail
+              YarnMarket AI
             </h1>
           </div>
 

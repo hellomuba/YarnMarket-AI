@@ -1,37 +1,50 @@
-import { MessageSquare, Globe, Zap, Shield, BarChart3, Headphones } from "lucide-react";
+import {
+  MessageSquare,
+  Globe,
+  Zap,
+  Shield,
+  BarChart3,
+  Headphones,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const features = [
   {
     icon: MessageSquare,
     title: "Omnichannel Inbox",
-    description: "Manage all customer conversations from WhatsApp, Instagram, Facebook, and website chat in one unified inbox."
+    description:
+      "Manage all customer conversations from WhatsApp, Instagram, Facebook, and website chat in one unified inbox.",
   },
   {
     icon: Globe,
     title: "100+ Languages",
-    description: "Communicate with customers in their native language. Automatic translation and language detection powered by AI."
+    description:
+      "Communicate with customers in their native language. Automatic translation and language detection powered by AI.",
   },
   {
     icon: Zap,
     title: "Instant Responses",
-    description: "AI-powered chatbots handle common queries instantly, reducing response time from hours to seconds."
+    description:
+      "AI-powered chatbots handle common queries instantly, reducing response time from hours to seconds.",
   },
   {
     icon: Shield,
     title: "Smart Product Recommendations",
-    description: "AI suggests relevant products based on customer conversations, increasing average order value by up to 30%."
+    description:
+      "AI suggests relevant products based on customer conversations, increasing average order value by up to 30%.",
   },
   {
     icon: BarChart3,
     title: "Analytics & Insights",
-    description: "Track conversation metrics, customer satisfaction, sales conversions, and team performance in real-time."
+    description:
+      "Track conversation metrics, customer satisfaction, sales conversions, and team performance in real-time.",
   },
   {
     icon: Headphones,
     title: "Live Chat Handoff",
-    description: "Seamlessly transfer from AI to human agents when needed. Keep context and conversation history intact."
-  }
+    description:
+      "Seamlessly transfer from AI to human agents when needed. Keep context and conversation history intact.",
+  },
 ];
 
 export const Features = () => {
@@ -41,18 +54,19 @@ export const Features = () => {
         <div className="max-w-3xl mx-auto text-center mb-16 animate-fade-in">
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
             Everything You Need to
-            <span className="block bg-gradient-primary bg-clip-text text-transparent">
+            <span className="block bg-gradient-primary bg-clip-text text-transparent pb-2">
               Scale Customer Support
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            From small businesses to enterprise retailers, our platform grows with you
+            From small businesses to enterprise retailers, our platform grows
+            with you
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card 
+            <Card
               key={index}
               className="p-8 hover:shadow-glow transition-all duration-300 hover:-translate-y-1 bg-gradient-card border-border backdrop-blur-sm animate-scale-in group cursor-pointer"
               style={{ animationDelay: `${index * 0.1}s` }}
@@ -61,7 +75,9 @@ export const Features = () => {
                 <feature.icon className="text-white" size={28} />
               </div>
               <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+              <p className="text-muted-foreground leading-relaxed">
+                {feature.description}
+              </p>
             </Card>
           ))}
         </div>
