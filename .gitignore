@@ -2,6 +2,8 @@
 .env
 .env.local
 .env.*.local
+.env.*
+.env.example
 
 # Dependencies
 node_modules/
@@ -47,6 +49,15 @@ logs/
 
 # Claude settings (keep local only)
 .claude/settings.local.json
+.claude/
+
+# Ignore CLAUDE markdown and related docs
+CLAUDE.md
+claude.md
+CLAUDE.*
+
+# Plain env file (sometimes named 'env')
+env
 
 # Test coverage
 coverage/
@@ -57,3 +68,9 @@ coverage/
 *.temp
 # Next.js build output
 .next
+
+# Database backups (exclude actual backup files but keep README)
+backups/**/*.sql
+backups/**/*.sql.gz
+backups/**/*.dump
+!backups/**/README.md
