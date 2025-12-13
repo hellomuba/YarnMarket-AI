@@ -19,7 +19,7 @@ build/
 *.dylib
 
 # Go build outputs
-*.sum
+# Note: go.sum should be committed, don't ignore it!
 
 # Python cache
 __pycache__/
