@@ -11,6 +11,7 @@ import logging
 import asyncio
 
 from openai import AsyncOpenAI
+import httpx
 
 from .models import Language, Product, MerchantSettings, NegotiationState
 from .config import Settings
@@ -25,7 +26,19 @@ class CulturalIntelligence:
     
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
+        # Initialize OpenAI client for fallback
+        self.openai_client = AsyncOpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
+
+        # Initialize Moonshot (Kimi) client - compatible with OpenAI API format
+        self.kimi_client = AsyncOpenAI(
+            api_key=settings.moonshot_api_key,
+            base_url=settings.moonshot_api_base,
+            http_client=httpx.AsyncClient(timeout=settings.llm_request_timeout)
+        ) if settings.moonshot_api_key else None
+
+        # Determine which client to use as primary
+        self.primary_client = self.kimi_client if (self.kimi_client and settings.primary_llm == "kimi-k2") else self.openai_client
+        self.fallback_client = self.openai_client if self.primary_client == self.kimi_client else self.kimi_client
         
         # Nigerian market greeting templates by time and language
         self.greeting_templates = {
@@ -588,8 +601,7 @@ class CulturalIntelligence:
             Be helpful, culturally appropriate, and business-focused."""
 
         try:
-            response = await self.openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            response = await self._call_llm_with_fallback(
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": customer_message}
@@ -599,9 +611,9 @@ class CulturalIntelligence:
                 presence_penalty=0.1,
                 frequency_penalty=0.1
             )
-            
+
             generated_text = response.choices[0].message.content.strip()
-            
+
             # Clean up response
             if generated_text:
                 # Remove quotation marks if present
@@ -611,11 +623,54 @@ class CulturalIntelligence:
                     generated_text += '!'
                 return generated_text
             else:
-                raise Exception("Empty response from OpenAI")
-                
+                raise Exception("Empty response from LLM")
+
         except Exception as e:
-            logger.error(f"OpenAI API error: {str(e)}")
+            logger.error(f"LLM API error: {str(e)}")
             raise e
+
+    async def _call_llm_with_fallback(self, messages: List[Dict], **kwargs) -> Any:
+        """
+        Call LLM with automatic fallback between Kimi and OpenAI
+        """
+        # Determine model to use based on primary LLM setting
+        primary_model = self.settings.kimi_model if self.settings.primary_llm == "kimi-k2" else self.settings.gpt_model
+        fallback_model = self.settings.gpt_model if self.settings.primary_llm == "kimi-k2" else self.settings.kimi_model
+
+        # Try primary LLM first
+        if self.primary_client:
+            for attempt in range(self.settings.llm_max_retries):
+                try:
+                    logger.info(f"Calling primary LLM: {self.settings.primary_llm} (attempt {attempt + 1})")
+                    response = await self.primary_client.chat.completions.create(
+                        model=primary_model,
+                        messages=messages,
+                        **kwargs
+                    )
+                    logger.info(f"✅ Primary LLM ({self.settings.primary_llm}) responded successfully")
+                    return response
+                except Exception as e:
+                    logger.warning(f"Primary LLM attempt {attempt + 1} failed: {str(e)}")
+                    if attempt < self.settings.llm_max_retries - 1:
+                        await asyncio.sleep(1 * (attempt + 1))  # Exponential backoff
+                    continue
+
+        # Try fallback LLM if enabled and primary failed
+        if self.settings.enable_llm_fallback and self.fallback_client:
+            logger.info(f"Trying fallback LLM: {self.settings.fallback_llm}")
+            try:
+                response = await self.fallback_client.chat.completions.create(
+                    model=fallback_model,
+                    messages=messages,
+                    **kwargs
+                )
+                logger.info(f"✅ Fallback LLM ({self.settings.fallback_llm}) responded successfully")
+                return response
+            except Exception as fallback_error:
+                logger.error(f"Fallback LLM also failed: {str(fallback_error)}")
+                raise Exception(f"Both primary and fallback LLMs failed. Last error: {str(fallback_error)}")
+
+        raise Exception("No LLM client available or all attempts failed")
     
     def _format_currency(self, amount: float) -> str:
         """Format currency in Nigerian Naira"""
