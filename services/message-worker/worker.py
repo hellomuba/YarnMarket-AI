@@ -27,7 +27,7 @@ CONVERSATION_ENGINE_URL = os.getenv(
     "CONVERSATION_ENGINE_URL",
     "http://localhost:8003"
 )
-INCOMING_QUEUE = "incoming_messages"
+INCOMING_QUEUE = "message_processing"  # Match webhook-handler queue name
 OUTGOING_QUEUE = "outgoing_messages"
 
 
