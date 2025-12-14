@@ -1,0 +1,4 @@
+# Replace OpenAI-style keys starting with sk-
+regex:sk-[A-Za-z0-9_\-]{20,}==><REDACTED>
+# Example: remove variations or literal long tokens
+regex:NEXT_PUBLIC_OPENAI_API_KEY\s*=\s*sk-[A-Za-z0-9_\-]{20,}==>NEXT_PUBLIC_OPENAI_API_KEY=<REDACTED>
