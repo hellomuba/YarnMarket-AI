@@ -137,7 +137,7 @@ export default function ConversationTester() {
   const selectedMerchant = merchants.find(m => m.id === merchantId)
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -226,11 +226,11 @@ export default function ConversationTester() {
         {/* Merchant Info Bar */}
         <div className="bg-white px-4 py-3 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
-              {selectedMerchant?.business_name.charAt(0)}
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+              {selectedMerchant?.business_name?.charAt(0) || 'M'}
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">{selectedMerchant?.business_name}</h2>
+              <h2 className="font-semibold text-gray-900">{selectedMerchant?.business_name || 'Select Merchant'}</h2>
               <p className="text-xs text-gray-500">Testing as {customerPhone}</p>
             </div>
           </div>
