@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["caddy", "nodejs", "npm"]
+nixPkgs = ["caddy", "nodejs"]
 
 [phases.install]
 cmds = ["npm ci"]
