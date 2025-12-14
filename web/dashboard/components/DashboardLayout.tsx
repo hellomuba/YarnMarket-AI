@@ -40,8 +40,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="p-6 border-b">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-xl">
-                  🇳🇬
+                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm">
+                  YM
                 </div>
                 <div>
                   <h1 className="text-lg font-bold">YarnMarket AI</h1>
@@ -131,21 +131,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <div className="flex-1"></div>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setDarkMode(!darkMode)}
-                >
-                  <span className="text-lg">{darkMode ? '☀️' : '🌙'}</span>
-                </Button>
-
                 <Button variant="outline" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
                 </Button>
 
-                <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-semibold">
-                  <span>U</span>
+                <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-semibold text-sm">
+                  U
                 </div>
               </div>
             </div>

@@ -81,7 +81,7 @@ const LanguageBar = ({
   <div className="space-y-2">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <span className="text-lg">{flag}</span>
+        <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded">{flag}</span>
         <span className="font-medium">{name}</span>
       </div>
       <span className="text-sm font-semibold text-primary">{percentage}%</span>
@@ -288,11 +288,11 @@ export default function Dashboard() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <LanguageBar flag="🇳🇬" name="Nigerian Pidgin" percentage={45} />
-              <LanguageBar flag="🇬🇧" name="English" percentage={35} />
-              <LanguageBar flag="👑" name="Yoruba" percentage={12} />
-              <LanguageBar flag="🦅" name="Igbo" percentage={5} />
-              <LanguageBar flag="🌾" name="Hausa" percentage={3} />
+              <LanguageBar flag="NG" name="Nigerian Pidgin" percentage={45} />
+              <LanguageBar flag="EN" name="English" percentage={35} />
+              <LanguageBar flag="YO" name="Yoruba" percentage={12} />
+              <LanguageBar flag="IG" name="Igbo" percentage={5} />
+              <LanguageBar flag="HA" name="Hausa" percentage={3} />
             </CardContent>
           </Card>
 
@@ -383,7 +383,7 @@ export default function Dashboard() {
                             {conv.status}
                           </Badge>
                           <Badge variant="outline">
-                            {conv.language === 'pidgin' ? '🇳🇬' : '🇬🇧'} {conv.language}
+                            {conv.language}
                           </Badge>
                         </div>
                       </div>
