@@ -32,17 +32,41 @@ export interface LanguageStats {
   [language: string]: number
 }
 
+export interface ProductVariant {
+  id?: number
+  sku?: string
+  variant_name: string
+  colour?: string
+  size?: string
+  price: number
+  stock_quantity: number
+  availability: boolean
+  image_url?: string
+  metadata?: Record<string, any>
+}
+
 export interface Product {
   id?: number
   merchant_id?: number
   name: string
   description?: string
-  price: number
+  brand?: string
+  category: 'Clothing' | 'Electronics' | 'Food & Groceries' | 'Beauty & Personal Care' |
+            'Home & Living' | 'Sports & Outdoors' | 'Books & Media' | 'Toys & Games' | 'Other'
+  product_type: 'simple' | 'advanced'
+  base_price: number
   currency: string
-  category: string
-  in_stock: boolean
-  stock_quantity?: number
+  ean?: string
+  image_url?: string
+  metadata?: Record<string, any>
+  is_active: boolean
+  variants?: ProductVariant[]
   created_at?: string
+
+  // Legacy fields for backward compatibility
+  price?: number
+  in_stock?: boolean
+  stock_quantity?: number
 }
 
 // API Functions

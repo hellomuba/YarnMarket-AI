@@ -6,22 +6,26 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Package, Upload, Plus, Search, Download, FileUp } from 'lucide-react'
-import { dashboardAPI, type Product } from '@/lib/api'
+import { dashboardAPI, type Product, type ProductVariant } from '@/lib/api'
+import SimpleProductForm from '@/components/SimpleProductForm'
+import AdvancedProductForm from '@/components/AdvancedProductForm'
 
 export default function ProductsPage() {
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [productType, setProductType] = useState<'simple' | 'advanced'>('simple')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: '',
-    currency: 'NGN',
+    brand: '',
     category: '',
-    in_stock: true,
-    stock_quantity: ''
+    base_price: '',
+    currency: 'NGN',
+    ean: '',
+    image_url: ''
   })
 
   // Load products on mount
@@ -41,45 +45,115 @@ export default function ProductsPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSimpleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
 
     try {
       const productData: Omit<Product, 'id' | 'created_at'> = {
-        merchant_id: 1, // TODO: Get from auth context
+        merchant_id: 1,
         name: formData.name,
         description: formData.description,
-        price: parseFloat(formData.price),
+        brand: formData.brand,
+        category: formData.category as any,
+        product_type: 'simple',
+        base_price: parseFloat(formData.base_price),
         currency: formData.currency,
-        category: formData.category,
-        in_stock: formData.in_stock,
-        stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : undefined
+        ean: formData.ean,
+        image_url: formData.image_url,
+        is_active: true,
+        variants: []
       }
 
       await dashboardAPI.createProduct(productData)
-      alert('Product uploaded successfully!')
+      alert('Product created successfully!')
 
       // Reset form
       setFormData({
         name: '',
         description: '',
-        price: '',
-        currency: 'NGN',
+        brand: '',
         category: '',
-        in_stock: true,
-        stock_quantity: ''
+        base_price: '',
+        currency: 'NGN',
+        ean: '',
+        image_url: ''
       })
       setShowUploadForm(false)
 
       // Reload products
       await loadProducts()
     } catch (error) {
-      console.error('Failed to upload product:', error)
-      alert('Failed to upload product. Please try again.')
+      console.error('Failed to create product:', error)
+      alert('Failed to create product. Please try again.')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleAdvancedSubmit = async (e: React.FormEvent, variants: ProductVariant[]) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    try {
+      const productData: Omit<Product, 'id' | 'created_at'> = {
+        merchant_id: 1,
+        name: formData.name,
+        description: formData.description,
+        brand: formData.brand,
+        category: formData.category as any,
+        product_type: 'advanced',
+        base_price: parseFloat(formData.base_price),
+        currency: formData.currency,
+        ean: formData.ean,
+        image_url: formData.image_url,
+        is_active: true,
+        variants: variants.map(v => ({
+          ...v,
+          price: parseFloat(v.price as any),
+          stock_quantity: parseInt(v.stock_quantity as any) || 0,
+          availability: true
+        }))
+      }
+
+      await dashboardAPI.createProduct(productData)
+      alert('Product with variants created successfully!')
+
+      // Reset form
+      setFormData({
+        name: '',
+        description: '',
+        brand: '',
+        category: '',
+        base_price: '',
+        currency: 'NGN',
+        ean: '',
+        image_url: ''
+      })
+      setShowUploadForm(false)
+
+      // Reload products
+      await loadProducts()
+    } catch (error) {
+      console.error('Failed to create product:', error)
+      alert('Failed to create product. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setShowUploadForm(false)
+    setFormData({
+      name: '',
+      description: '',
+      brand: '',
+      category: '',
+      base_price: '',
+      currency: 'NGN',
+      ean: '',
+      image_url: ''
+    })
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -143,158 +217,54 @@ export default function ProductsPage() {
 
       {/* Upload Form */}
       {showUploadForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New Product</CardTitle>
-            <CardDescription>Fill in the product details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Product Name */}
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">
-                    Product Name *
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="e.g., Cotton Shirt"
-                  />
-                </div>
-
-                {/* Category */}
-                <div className="space-y-2">
-                  <label htmlFor="category" className="text-sm font-medium">
-                    Category *
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    required
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="">Select category</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="food">Food & Groceries</option>
-                    <option value="beauty">Beauty & Personal Care</option>
-                    <option value="home">Home & Living</option>
-                    <option value="sports">Sports & Outdoors</option>
-                    <option value="books">Books & Media</option>
-                    <option value="toys">Toys & Games</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                {/* Price */}
-                <div className="space-y-2">
-                  <label htmlFor="price" className="text-sm font-medium">
-                    Price *
-                  </label>
-                  <input
-                    id="price"
-                    name="price"
-                    type="number"
-                    step="0.01"
-                    required
-                    value={formData.price}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="0.00"
-                  />
-                </div>
-
-                {/* Currency */}
-                <div className="space-y-2">
-                  <label htmlFor="currency" className="text-sm font-medium">
-                    Currency
-                  </label>
-                  <select
-                    id="currency"
-                    name="currency"
-                    value={formData.currency}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="NGN">NGN (₦)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                  </select>
-                </div>
-
-                {/* Stock Quantity */}
-                <div className="space-y-2">
-                  <label htmlFor="stock_quantity" className="text-sm font-medium">
-                    Stock Quantity
-                  </label>
-                  <input
-                    id="stock_quantity"
-                    name="stock_quantity"
-                    type="number"
-                    value={formData.stock_quantity}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="0"
-                  />
-                </div>
-
-                {/* In Stock */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Availability</label>
-                  <div className="flex items-center gap-2 pt-2">
-                    <input
-                      id="in_stock"
-                      name="in_stock"
-                      type="checkbox"
-                      checked={formData.in_stock}
-                      onChange={handleChange}
-                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-                    />
-                    <label htmlFor="in_stock" className="text-sm">
-                      In Stock
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium">
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                  placeholder="Detailed product description..."
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowUploadForm(false)} disabled={submitting}>
-                  Cancel
+        <div className="space-y-4">
+          {/* Product Type Toggle */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Select Product Type</CardTitle>
+              <CardDescription>Choose between simple or advanced product with variants</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant={productType === 'simple' ? 'default' : 'outline'}
+                  onClick={() => setProductType('simple')}
+                  className="flex-1"
+                >
+                  Simple Product
                 </Button>
-                <Button type="submit" className="gap-2" disabled={submitting}>
-                  <Upload className="h-4 w-4" />
-                  {submitting ? 'Uploading...' : 'Upload Product'}
+                <Button
+                  type="button"
+                  variant={productType === 'advanced' ? 'default' : 'outline'}
+                  onClick={() => setProductType('advanced')}
+                  className="flex-1"
+                >
+                  Advanced Product (Variants)
                 </Button>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Render appropriate form */}
+          {productType === 'simple' ? (
+            <SimpleProductForm
+              formData={formData}
+              onChange={handleChange}
+              onSubmit={handleSimpleSubmit}
+              onCancel={handleCancel}
+              submitting={submitting}
+            />
+          ) : (
+            <AdvancedProductForm
+              formData={formData}
+              onChange={handleChange}
+              onSubmit={handleAdvancedSubmit}
+              onCancel={handleCancel}
+              submitting={submitting}
+            />
+          )}
+        </div>
       )}
 
       {/* Bulk Upload */}
@@ -386,29 +356,77 @@ export default function ProductsPage() {
               </div>
             ) : (
               products.map((product) => (
-                <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Package className="h-6 w-6 text-primary" />
+                <div key={product.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="w-12 h-12 rounded-lg object-cover" />
+                      ) : (
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <Package className="h-6 w-6 text-primary" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{product.name}</h3>
+                          {product.brand && (
+                            <Badge variant="outline" className="text-xs">{product.brand}</Badge>
+                          )}
+                          <Badge variant={product.product_type === 'advanced' ? 'default' : 'secondary'} className="text-xs">
+                            {product.product_type === 'advanced' ? 'Advanced' : 'Simple'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{product.category}</p>
+                        {product.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{product.description}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground capitalize">{product.category}</p>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="font-bold">
+                          {product.currency === 'NGN' ? '₦' : product.currency === 'USD' ? '$' : product.currency === 'EUR' ? '€' : '£'}
+                          {product.base_price?.toLocaleString() || product.price?.toLocaleString() || '0'}
+                        </p>
+                        {product.product_type === 'advanced' && product.variants && product.variants.length > 0 && (
+                          <p className="text-sm text-muted-foreground">
+                            {product.variants.length} variant{product.variants.length !== 1 ? 's' : ''}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                        {product.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-bold">
-                        {product.currency === 'NGN' ? '₦' : '$'}{product.price.toLocaleString()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {product.stock_quantity || 0} units
-                      </p>
+
+                  {/* Show variants for advanced products */}
+                  {product.product_type === 'advanced' && product.variants && product.variants.length > 0 && (
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Variants:</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {product.variants.map((variant, idx) => (
+                          <div key={variant.id || idx} className="text-xs p-2 bg-muted/30 rounded border">
+                            <div className="font-medium">{variant.variant_name}</div>
+                            <div className="text-muted-foreground flex items-center justify-between mt-1">
+                              <span>
+                                {variant.colour && `${variant.colour} • `}
+                                {variant.size && `Size ${variant.size}`}
+                              </span>
+                              <span className="font-semibold">
+                                {product.currency === 'NGN' ? '₦' : '$'}{variant.price?.toLocaleString()}
+                              </span>
+                            </div>
+                            {variant.stock_quantity !== undefined && (
+                              <div className="text-muted-foreground mt-1">
+                                Stock: {variant.stock_quantity} • {variant.sku}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <Badge variant={product.in_stock ? 'default' : 'secondary'}>
-                      {product.in_stock ? 'In Stock' : 'Out of Stock'}
-                    </Badge>
-                  </div>
+                  )}
                 </div>
               ))
             )}
