@@ -1,12 +1,15 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost'
 
+// Helper function to remove trailing slashes
+const removeTrailingSlash = (url: string) => url.replace(/\/+$/, '')
+
 // API endpoints
 const ENDPOINTS = {
   conversationEngine: `${API_BASE_URL}:8003`,
   merchantApi: `${API_BASE_URL}:3005`,
   analyticsService: `${API_BASE_URL}:8004`,
   webhookHandler: `${API_BASE_URL}:8082`,
-  dashboardApi: process.env.NEXT_PUBLIC_DASHBOARD_API_URL || `${API_BASE_URL}:8005`
+  dashboardApi: removeTrailingSlash(process.env.NEXT_PUBLIC_DASHBOARD_API_URL || `${API_BASE_URL}:8005`)
 }
 
 // Types
