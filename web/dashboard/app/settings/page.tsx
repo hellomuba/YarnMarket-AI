@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import DashboardLayout from '@/components/DashboardLayout'
 import { Settings as SettingsIcon, MessageSquare, Globe, Shield, Bell, Zap, Users, Store, Bot, Save, RefreshCw, Eye, EyeOff, ChevronRight, Check, X } from 'lucide-react'
 
 // Icons Component
@@ -455,18 +456,14 @@ export default function Settings() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-emerald-950/30 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 pt-32">
-        
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-black text-gray-900 dark:text-white brand-font flex items-center space-x-3">
-                <span>⚙️</span>
-                <span className="bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Settings & Configuration
-                </span>
+              <h1 className="text-4xl font-bold tracking-tight">
+                Settings & Configuration
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">
                 Customize your YarnMarket AI experience and business settings
@@ -533,8 +530,8 @@ export default function Settings() {
             {renderSection()}
           </div>
         </div>
-        
+
       </div>
-    </div>
+    </DashboardLayout>
   )
 }

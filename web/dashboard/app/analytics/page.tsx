@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import DashboardLayout from '@/components/DashboardLayout'
 import { BarChart3, TrendingUp, TrendingDown, Users, MessageSquare, ShoppingCart, Clock, Globe, Target, Zap } from 'lucide-react'
 
 // Icons Component
@@ -32,11 +33,11 @@ const analyticsData = {
     { period: '90 days', conversations: 2847, revenue: 12500000, growth: 15 }
   ],
   languages: [
-    { name: 'Nigerian Pidgin', code: 'pidgin', percentage: 45, conversations: 1281, flag: '🇳🇬', growth: 5 },
-    { name: 'English', code: 'english', percentage: 35, conversations: 996, flag: '🇬🇧', growth: -2 },
-    { name: 'Yoruba', code: 'yoruba', percentage: 12, conversations: 342, flag: '👑', growth: 8 },
-    { name: 'Igbo', code: 'igbo', percentage: 5, conversations: 142, flag: '🦅', growth: 12 },
-    { name: 'Hausa', code: 'hausa', percentage: 3, conversations: 85, flag: '🌾', growth: 3 }
+    { name: 'Nigerian Pidgin', code: 'pidgin', percentage: 45, conversations: 1281, flag: 'NG', growth: 5 },
+    { name: 'English', code: 'english', percentage: 35, conversations: 996, flag: 'EN', growth: -2 },
+    { name: 'Yoruba', code: 'yoruba', percentage: 12, conversations: 342, flag: 'YO', growth: 8 },
+    { name: 'Igbo', code: 'igbo', percentage: 5, conversations: 142, flag: 'IG', growth: 12 },
+    { name: 'Hausa', code: 'hausa', percentage: 3, conversations: 85, flag: 'HA', growth: 3 }
   ],
   regions: [
     { name: 'Lagos', percentage: 35, customers: 998, revenue: 4375000 },
@@ -170,18 +171,14 @@ export default function Analytics() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-emerald-950/30 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 pt-32">
-        
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-black text-gray-900 dark:text-white brand-font flex items-center space-x-3">
-                <span>📊</span>
-                <span className="bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Market Analytics
-                </span>
+              <h1 className="text-4xl font-bold tracking-tight">
+                Market Analytics
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">
                 Deep insights into Nigerian conversational commerce trends
@@ -443,8 +440,8 @@ export default function Analytics() {
             </p>
           </div>
         </div>
-        
+
       </div>
-    </div>
+    </DashboardLayout>
   )
 }

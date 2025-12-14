@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import DashboardLayout from '@/components/DashboardLayout'
 import { Search, Send, Phone, Video, MoreVertical, User, AlertCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { dashboardAPI } from '../../lib/api'
@@ -220,15 +221,14 @@ export default function Conversations() {
   const unreadCount = conversations.filter(c => c.unread).length
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-emerald-950/30 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 pt-32">
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-2">
-                <span>💬</span>
-                <span>YarnMarket Conversations</span>
+              <h1 className="text-3xl font-bold">
+                YarnMarket Conversations
               </h1>
               <p className="text-gray-600 mt-1">AI-powered customer chat with cultural haggling</p>
             </div>
@@ -506,6 +506,6 @@ export default function Conversations() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   )
 }
