@@ -71,7 +71,7 @@ export default function ConversationTester() {
       const messageId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
       const payload = {
-        merchant_id: parseInt(merchantId),
+        merchant_id: merchantId,  // Send as string, not number
         customer_phone: customerPhone,
         message: {
           id: messageId,
