@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,13 @@ import {
   Check,
   X
 } from 'lucide-react'
+import {
+  initializeFacebookSDK,
+  launchWhatsAppSignup,
+  getWhatsAppStatus,
+  disconnectWhatsApp
+} from '@/lib/whatsapp-signup'
+import type { WhatsAppSignupResult } from '@/lib/whatsapp-signup'
 
 interface SettingsSection {
   id: string
@@ -95,6 +102,17 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState('ai-responses')
   const [isSaving, setIsSaving] = useState(false)
   const [showApiKey, setShowApiKey] = useState(false)
+
+  // WhatsApp connection state
+  const [whatsappStatus, setWhatsappStatus] = useState({
+    connected: false,
+    loading: true,
+    phone_number: null as string | null,
+    verified_name: null as string | null,
+    quality_rating: null as string | null
+  })
+  const [connectingWhatsApp, setConnectingWhatsApp] = useState(false)
+
   const [settings, setSettings] = useState({
     ai: {
       responseStyle: 'friendly',
@@ -156,6 +174,97 @@ export default function Settings() {
         [key]: value
       }
     }))
+  }
+
+  // Initialize Facebook SDK on mount
+  useEffect(() => {
+    const metaAppId = process.env.NEXT_PUBLIC_META_APP_ID
+
+    if (metaAppId) {
+      initializeFacebookSDK(metaAppId)
+        .then(() => console.log('✅ Facebook SDK initialized'))
+        .catch(err => console.error('Failed to initialize Facebook SDK:', err))
+    }
+  }, [])
+
+  // Load WhatsApp connection status on mount
+  useEffect(() => {
+    loadWhatsAppStatus()
+  }, [])
+
+  async function loadWhatsAppStatus() {
+    try {
+      const merchantId = 'MERCHANT-001' // TODO: Get from auth context
+      const status = await getWhatsAppStatus(merchantId)
+
+      setWhatsappStatus({
+        connected: status.connected,
+        loading: false,
+        phone_number: status.phone_number,
+        verified_name: status.verified_name,
+        quality_rating: status.quality_rating
+      })
+    } catch (error) {
+      console.error('Error loading WhatsApp status:', error)
+      setWhatsappStatus(prev => ({ ...prev, loading: false }))
+    }
+  }
+
+  function handleConnectWhatsApp() {
+    setConnectingWhatsApp(true)
+
+    const merchantId = 'MERCHANT-001' // TODO: Get from auth context
+    const businessName = settings.business.name
+
+    launchWhatsAppSignup({
+      merchantId,
+      businessName,
+      onSuccess: (data: WhatsAppSignupResult) => {
+        console.log('WhatsApp connected successfully:', data)
+
+        setWhatsappStatus({
+          connected: true,
+          loading: false,
+          phone_number: data.phone_number,
+          verified_name: data.verified_name,
+          quality_rating: data.quality_rating
+        })
+
+        setConnectingWhatsApp(false)
+
+        // Show success message
+        alert(`WhatsApp connected successfully!\nPhone: ${data.phone_number}\nVerified as: ${data.verified_name}`)
+      },
+      onError: (error: string) => {
+        console.error('WhatsApp connection failed:', error)
+        setConnectingWhatsApp(false)
+        alert(`Failed to connect WhatsApp: ${error}`)
+      }
+    })
+  }
+
+  async function handleDisconnectWhatsApp() {
+    if (!confirm('Are you sure you want to disconnect WhatsApp? You will stop receiving customer messages.')) {
+      return
+    }
+
+    try {
+      const merchantId = 'MERCHANT-001' // TODO: Get from auth context
+      await disconnectWhatsApp(merchantId)
+
+      setWhatsappStatus({
+        connected: false,
+        loading: false,
+        phone_number: null,
+        verified_name: null,
+        quality_rating: null
+      })
+
+      alert('WhatsApp disconnected successfully')
+    } catch (error) {
+      console.error('Error disconnecting WhatsApp:', error)
+      alert('Failed to disconnect WhatsApp. Please try again.')
+    }
   }
 
   const renderAISettings = () => (
@@ -309,6 +418,7 @@ export default function Settings() {
 
   const renderIntegrationsSettings = () => (
     <div className="space-y-6">
+      {/* WhatsApp Integration */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -316,53 +426,143 @@ export default function Settings() {
               <Zap className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle>Communication Channels</CardTitle>
-              <CardDescription>Connect your messaging platforms</CardDescription>
+              <CardTitle>WhatsApp Business</CardTitle>
+              <CardDescription>Connect your WhatsApp number to receive customer messages</CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {Object.entries(settings.integrations).map(([key, integration]) => (
-            <div key={key} className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <span className="font-semibold text-primary text-sm">
-                    {key === 'whatsapp' ? 'WA' :
-                     key === 'instagram' ? 'IG' :
-                     key === 'sms' ? 'SMS' : 'PAY'}
-                  </span>
+        <CardContent>
+          {whatsappStatus.loading ? (
+            <div className="flex items-center justify-center p-8">
+              <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : whatsappStatus.connected ? (
+            <div className="space-y-4">
+              {/* Connected Status */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-primary/5">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <span className="font-semibold text-primary text-sm">WA</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">WhatsApp Connected</h4>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Check className="h-3 w-3 text-primary" />
+                      <span className="text-sm text-muted-foreground">
+                        {whatsappStatus.phone_number}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Badge variant="default">Active</Badge>
+              </div>
+
+              {/* Connection Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Verified Name</label>
+                  <p className="text-sm font-semibold mt-1">{whatsappStatus.verified_name || 'N/A'}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold">
-                    {key === 'whatsapp' ? 'WhatsApp Business' :
-                     key === 'instagram' ? 'Instagram DMs' :
-                     key === 'sms' ? 'SMS Gateway' :
-                     'Payment Gateway'}
-                  </h4>
-                  <div className="flex items-center gap-1 mt-1">
-                    {integration.connected ? (
-                      <>
-                        <Check className="h-3 w-3 text-primary" />
-                        <span className="text-sm text-muted-foreground">Connected</span>
-                      </>
-                    ) : (
-                      <>
-                        <X className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Not Connected</span>
-                      </>
-                    )}
+                  <label className="text-sm font-medium text-muted-foreground">Quality Rating</label>
+                  <p className="text-sm font-semibold mt-1">
+                    <Badge variant={
+                      whatsappStatus.quality_rating === 'GREEN' ? 'default' :
+                      whatsappStatus.quality_rating === 'YELLOW' ? 'secondary' : 'secondary'
+                    }>
+                      {whatsappStatus.quality_rating || 'UNKNOWN'}
+                    </Badge>
+                  </p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" size="sm" onClick={loadWhatsAppStatus}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Status
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleDisconnectWhatsApp}>
+                  Disconnect WhatsApp
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Not Connected */}
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                    <span className="font-semibold text-muted-foreground text-sm">WA</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">WhatsApp Business</h4>
+                    <div className="flex items-center gap-1 mt-1">
+                      <X className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Not Connected</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <ToggleSwitch
-                  enabled={integration.enabled}
-                  onChange={(value) => updateSetting('integrations', key, { ...integration, enabled: value })}
-                />
-                <Button variant="outline" size="sm">
-                  {integration.connected ? 'Reconfigure' : 'Connect'}
-                </Button>
+
+              {/* Setup Instructions */}
+              <div className="bg-muted p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">Setup Instructions</h4>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li>Click "Connect WhatsApp Business" below</li>
+                  <li>Log in with your Facebook account (if not already logged in)</li>
+                  <li>Select or create a WhatsApp Business Account</li>
+                  <li>Choose your WhatsApp phone number</li>
+                  <li>Authorize YarnMarket AI to manage messages</li>
+                </ol>
               </div>
+
+              {/* Connect Button */}
+              <Button
+                onClick={handleConnectWhatsApp}
+                disabled={connectingWhatsApp}
+                className="w-full gap-2"
+              >
+                {connectingWhatsApp ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-4 w-4" />
+                    Connect WhatsApp Business
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Other Integrations (Coming Soon) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Other Channels</CardTitle>
+          <CardDescription>Additional messaging platforms (coming soon)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {['Instagram DMs', 'SMS Gateway', 'Payment Gateway'].map((channel) => (
+            <div key={channel} className="flex items-center justify-between p-4 border rounded-lg opacity-60">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                  <span className="font-semibold text-muted-foreground text-sm">
+                    {channel.substring(0, 3).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-semibold">{channel}</h4>
+                  <p className="text-sm text-muted-foreground">Coming Soon</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" disabled>
+                Coming Soon
+              </Button>
             </div>
           ))}
         </CardContent>

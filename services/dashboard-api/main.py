@@ -64,6 +64,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include API routers
+from routes import whatsapp_router
+app.include_router(whatsapp_router)
+
 
 @app.get("/health")
 async def health_check():
