@@ -2,16 +2,17 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
   Phone,
   MessageSquare,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Power
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { merchantsApi } from '@/lib/api';
@@ -30,7 +31,8 @@ const MerchantCard: React.FC<{
   merchant: Merchant;
   onEdit: (merchant: Merchant) => void;
   onDelete: (id: number) => void;
-}> = ({ merchant, onEdit, onDelete }) => {
+  onToggleStatus: (id: number, newStatus: string) => void;
+}> = ({ merchant, onEdit, onDelete, onToggleStatus }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -88,6 +90,17 @@ const MerchantCard: React.FC<{
         </div>
         
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => onToggleStatus(merchant.id, merchant.status === 'active' ? 'inactive' : 'active')}
+            className={`p-2 rounded-md transition-colors ${
+              merchant.status === 'active'
+                ? 'text-green-400 hover:text-green-300 hover:bg-slate-700'
+                : 'text-slate-400 hover:text-green-400 hover:bg-slate-700'
+            }`}
+            title={merchant.status === 'active' ? 'Deactivate merchant' : 'Activate merchant'}
+          >
+            <Power className="h-4 w-4" />
+          </button>
           <button
             onClick={() => onEdit(merchant)}
             className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-md transition-colors"
@@ -346,6 +359,23 @@ export default function MerchantsPage() {
     }
   };
 
+  const handleToggleStatus = (id: number, newStatus: string) => {
+    const merchant = merchants?.find(m => m.id === id);
+    if (!merchant) return;
+
+    updateMutation.mutate({
+      id,
+      data: {
+        business_name: merchant.business_name,
+        contact_phone: merchant.phone_number || merchant.contact_phone || '',
+        business_type: merchant.business_type || '',
+        contact_email: merchant.email || merchant.contact_email,
+        business_address: merchant.business_address,
+        status: newStatus,
+      } as any,
+    });
+  };
+
   const filteredMerchants = merchants?.filter(merchant => {
     const matchesSearch = merchant.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (merchant.phone_number || merchant.contact_phone)?.includes(searchTerm) ||
@@ -420,6 +450,7 @@ export default function MerchantsPage() {
             merchant={merchant}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onToggleStatus={handleToggleStatus}
           />
         ))}
       </div>
