@@ -1,11 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_18", "bun"]
-
-[phases.install]
-cmds = ["npm ci"]
-
-[phases.build]
-cmds = ["bun run build"]
+nixPkgs = []
 
 [start]
 cmd = "caddy run --config Caddyfile --adapter caddyfile 2>&1"
