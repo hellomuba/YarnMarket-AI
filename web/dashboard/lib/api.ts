@@ -1,7 +1,10 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost'
 
 // Helper function to remove trailing slashes
-const removeTrailingSlash = (url: string) => url.replace(/\/+$/, '')
+const removeTrailingSlash = (url: string | undefined): string => {
+  if (!url) return ''
+  return url.replace(/\/+$/, '')
+}
 
 // API endpoints
 const ENDPOINTS = {
@@ -9,7 +12,7 @@ const ENDPOINTS = {
   merchantApi: `${API_BASE_URL}:3005`,
   analyticsService: `${API_BASE_URL}:8004`,
   webhookHandler: `${API_BASE_URL}:8082`,
-  dashboardApi: removeTrailingSlash(process.env.NEXT_PUBLIC_DASHBOARD_API_URL || `${API_BASE_URL}:8005`)
+  dashboardApi: removeTrailingSlash(process.env.NEXT_PUBLIC_DASHBOARD_API_URL) || `${API_BASE_URL}:8005`
 }
 
 // Types
@@ -180,7 +183,16 @@ export class DashboardAPI {
   async getProducts(merchantId: number = 1): Promise<Product[]> {
     try {
       const data = await this.fetchWithTimeout(`${ENDPOINTS.dashboardApi}/api/products?merchant_id=${merchantId}`)
-      return data
+
+      // Ensure variants is always an array
+      return data.map((product: any) => ({
+        ...product,
+        variants: Array.isArray(product.variants)
+          ? product.variants
+          : (typeof product.variants === 'string'
+              ? JSON.parse(product.variants)
+              : [])
+      }))
     } catch (error) {
       console.warn('Failed to fetch products from API:', error)
       return []

@@ -388,7 +388,7 @@ export default function ProductsPage() {
                           {product.currency === 'NGN' ? '₦' : product.currency === 'USD' ? '$' : product.currency === 'EUR' ? '€' : '£'}
                           {product.base_price?.toLocaleString() || product.price?.toLocaleString() || '0'}
                         </p>
-                        {product.product_type === 'advanced' && product.variants && product.variants.length > 0 && (
+                        {product.product_type === 'advanced' && Array.isArray(product.variants) && product.variants.length > 0 && (
                           <p className="text-sm text-muted-foreground">
                             {product.variants.length} variant{product.variants.length !== 1 ? 's' : ''}
                           </p>
@@ -401,7 +401,7 @@ export default function ProductsPage() {
                   </div>
 
                   {/* Show variants for advanced products */}
-                  {product.product_type === 'advanced' && product.variants && product.variants.length > 0 && (
+                  {product.product_type === 'advanced' && Array.isArray(product.variants) && product.variants.length > 0 && (
                     <div className="mt-3 pt-3 border-t">
                       <p className="text-xs font-medium text-muted-foreground mb-2">Variants:</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
