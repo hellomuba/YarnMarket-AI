@@ -5,10 +5,11 @@ import DashboardLayout from '@/components/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Package, Upload, Plus, Search } from 'lucide-react'
+import { Package, Upload, Plus, Search, Download, FileUp } from 'lucide-react'
 
 export default function ProductsPage() {
   const [showUploadForm, setShowUploadForm] = useState(false)
+  const [showBulkUpload, setShowBulkUpload] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -44,6 +45,33 @@ export default function ProductsPage() {
     }))
   }
 
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // TODO: Implement CSV parsing and bulk upload to API
+      console.log('Uploading file:', file.name)
+      alert(`Processing ${file.name}... (Feature coming soon)`)
+      setShowBulkUpload(false)
+    }
+  }
+
+  const downloadTemplate = () => {
+    const csvContent = `name,description,price,currency,category,in_stock,stock_quantity
+"Cotton Shirt","High quality cotton shirt, available in multiple colors",15000,NGN,clothing,true,50
+"Jeans","Durable denim jeans, perfect fit",25000,NGN,clothing,true,30
+"Smartphone","Latest Android smartphone with great camera",150000,NGN,electronics,true,15`
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'product_upload_template.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
@@ -53,9 +81,19 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold">Products</h1>
           <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
-        <Button onClick={() => setShowUploadForm(!showUploadForm)} className="gap-2">
-          {showUploadForm ? 'Cancel' : <><Plus className="h-4 w-4" /> Add Product</>}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={downloadTemplate} className="gap-2">
+            <Download className="h-4 w-4" />
+            Download Template
+          </Button>
+          <Button variant="outline" onClick={() => setShowBulkUpload(!showBulkUpload)} className="gap-2">
+            <FileUp className="h-4 w-4" />
+            Bulk Upload
+          </Button>
+          <Button onClick={() => setShowUploadForm(!showUploadForm)} className="gap-2">
+            {showUploadForm ? 'Cancel' : <><Plus className="h-4 w-4" /> Add Product</>}
+          </Button>
+        </div>
       </div>
 
       {/* Upload Form */}
@@ -210,6 +248,58 @@ export default function ProductsPage() {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Bulk Upload */}
+      {showBulkUpload && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Bulk Upload Products</CardTitle>
+            <CardDescription>Upload multiple products at once using a CSV file</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <FileUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Upload CSV File</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Drag and drop your CSV file here or click to browse
+              </p>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleBulkUpload}
+                className="hidden"
+                id="bulk-upload"
+              />
+              <label htmlFor="bulk-upload">
+                <Button asChild variant="outline">
+                  <span className="cursor-pointer">Choose File</span>
+                </Button>
+              </label>
+            </div>
+
+            <div className="bg-muted p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">CSV Format Requirements:</h4>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                <li>First row must be headers: name, description, price, currency, category, in_stock, stock_quantity</li>
+                <li>All fields are required except stock_quantity</li>
+                <li>in_stock should be true or false</li>
+                <li>currency should be NGN, USD, EUR, or GBP</li>
+                <li>Download the template above for a sample format</li>
+              </ul>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowBulkUpload(false)}>
+                Cancel
+              </Button>
+              <Button onClick={downloadTemplate} className="gap-2">
+                <Download className="h-4 w-4" />
+                Download Template
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
