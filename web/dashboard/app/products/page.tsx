@@ -13,6 +13,7 @@ import AdvancedProductForm from '@/components/AdvancedProductForm'
 export default function ProductsPage() {
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false)
   const [productType, setProductType] = useState<'simple' | 'advanced'>('simple')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,6 +33,20 @@ export default function ProductsPage() {
   useEffect(() => {
     loadProducts()
   }, [])
+
+  // Close template menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showTemplateMenu) {
+        const target = event.target as HTMLElement
+        if (!target.closest('.relative')) {
+          setShowTemplateMenu(false)
+        }
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [showTemplateMenu])
 
   const loadProducts = async () => {
     try {
@@ -174,17 +189,36 @@ export default function ProductsPage() {
     }
   }
 
-  const downloadTemplate = () => {
-    const csvContent = `name,description,price,currency,category,in_stock,stock_quantity
-"Cotton Shirt","High quality cotton shirt, available in multiple colors",15000,NGN,clothing,true,50
-"Jeans","Durable denim jeans, perfect fit",25000,NGN,clothing,true,30
-"Smartphone","Latest Android smartphone with great camera",150000,NGN,electronics,true,15`
+  const downloadSimpleTemplate = () => {
+    const csvContent = `name,description,brand,category,base_price,currency,ean,image_url
+"Cotton T-Shirt","Premium quality cotton t-shirt, comfortable and breathable","LocalBrand","Clothing",5000,NGN,1234567890123,https://example.com/tshirt.jpg
+"Wireless Mouse","Ergonomic wireless mouse with USB receiver","TechGear","Electronics",8500,NGN,2345678901234,https://example.com/mouse.jpg
+"Organic Honey","Pure organic honey from local farms, 500g jar","NaijaNatural","Food & Groceries",3500,NGN,3456789012345,https://example.com/honey.jpg`
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', 'product_upload_template.csv')
+    link.setAttribute('download', 'simple_products_template.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const downloadAdvancedTemplate = () => {
+    const csvContent = `product_name,product_description,product_brand,product_category,product_base_price,product_currency,product_ean,product_image_url,variant_name,variant_colour,variant_size,variant_price,variant_stock_quantity,variant_sku
+"Designer Sneakers","Premium designer sneakers available in multiple colors and sizes","UrbanFit","Clothing",25000,NGN,4567890123456,https://example.com/sneakers.jpg,"Black Sneakers - Size 40","Black","40",25000,10,SNK-BLK-40
+"Designer Sneakers","Premium designer sneakers available in multiple colors and sizes","UrbanFit","Clothing",25000,NGN,4567890123456,https://example.com/sneakers.jpg,"Black Sneakers - Size 42","Black","42",25000,15,SNK-BLK-42
+"Designer Sneakers","Premium designer sneakers available in multiple colors and sizes","UrbanFit","Clothing",25000,NGN,4567890123456,https://example.com/sneakers.jpg,"White Sneakers - Size 40","White","40",27000,12,SNK-WHT-40
+"Designer Sneakers","Premium designer sneakers available in multiple colors and sizes","UrbanFit","Clothing",25000,NGN,4567890123456,https://example.com/sneakers.jpg,"White Sneakers - Size 42","White","42",27000,20,SNK-WHT-42
+"Designer Sneakers","Premium designer sneakers available in multiple colors and sizes","UrbanFit","Clothing",25000,NGN,4567890123456,https://example.com/sneakers.jpg,"Red Sneakers - Size 42","Red","42",28000,5,SNK-RED-42`
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'advanced_products_template.csv')
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -201,10 +235,40 @@ export default function ProductsPage() {
           <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={downloadTemplate} className="gap-2">
-            <Download className="h-4 w-4" />
-            Download Template
-          </Button>
+          <div className="relative">
+            <Button
+              variant="outline"
+              onClick={() => setShowTemplateMenu(!showTemplateMenu)}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download Template
+            </Button>
+            {showTemplateMenu && (
+              <div className="absolute top-full mt-2 right-0 bg-background border rounded-lg shadow-lg z-10 min-w-[200px]">
+                <button
+                  onClick={() => {
+                    downloadSimpleTemplate()
+                    setShowTemplateMenu(false)
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-muted rounded-t-lg transition-colors"
+                >
+                  <div className="font-medium">Simple Products</div>
+                  <div className="text-xs text-muted-foreground">Single variant products</div>
+                </button>
+                <button
+                  onClick={() => {
+                    downloadAdvancedTemplate()
+                    setShowTemplateMenu(false)
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-muted rounded-b-lg transition-colors border-t"
+                >
+                  <div className="font-medium">Advanced Products</div>
+                  <div className="text-xs text-muted-foreground">Multiple variants (size, color)</div>
+                </button>
+              </div>
+            )}
+          </div>
           <Button variant="outline" onClick={() => setShowBulkUpload(!showBulkUpload)} className="gap-2">
             <FileUp className="h-4 w-4" />
             Bulk Upload
@@ -295,24 +359,39 @@ export default function ProductsPage() {
               </label>
             </div>
 
-            <div className="bg-muted p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">CSV Format Requirements:</h4>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>First row must be headers: name, description, price, currency, category, in_stock, stock_quantity</li>
-                <li>All fields are required except stock_quantity</li>
-                <li>in_stock should be true or false</li>
-                <li>currency should be NGN, USD, EUR, or GBP</li>
-                <li>Download the template above for a sample format</li>
-              </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-muted p-4 rounded-lg border-2 border-primary/20">
+                <h4 className="font-semibold mb-2">Simple Products Template</h4>
+                <p className="text-xs text-muted-foreground mb-3">For products with single price and no variants</p>
+                <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside mb-3">
+                  <li>One row = one product</li>
+                  <li>Fields: name, description, brand, category, base_price, currency, ean, image_url</li>
+                  <li>Categories: Clothing, Electronics, Food & Groceries, etc.</li>
+                </ul>
+                <Button onClick={downloadSimpleTemplate} variant="outline" size="sm" className="w-full gap-2">
+                  <Download className="h-3 w-3" />
+                  Download Simple Template
+                </Button>
+              </div>
+
+              <div className="bg-muted p-4 rounded-lg border-2 border-primary/20">
+                <h4 className="font-semibold mb-2">Advanced Products Template</h4>
+                <p className="text-xs text-muted-foreground mb-3">For products with multiple variants (sizes, colors)</p>
+                <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside mb-3">
+                  <li>Multiple rows for same product = multiple variants</li>
+                  <li>Product fields + variant fields (variant_name, colour, size, price, stock, sku)</li>
+                  <li>Example: Same sneaker in different sizes and colors</li>
+                </ul>
+                <Button onClick={downloadAdvancedTemplate} variant="outline" size="sm" className="w-full gap-2">
+                  <Download className="h-3 w-3" />
+                  Download Advanced Template
+                </Button>
+              </div>
             </div>
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowBulkUpload(false)}>
                 Cancel
-              </Button>
-              <Button onClick={downloadTemplate} className="gap-2">
-                <Download className="h-4 w-4" />
-                Download Template
               </Button>
             </div>
           </CardContent>
