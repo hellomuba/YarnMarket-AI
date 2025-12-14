@@ -35,13 +35,24 @@ export default function ConversationTester() {
     setResponse(null)
 
     try {
+      // Generate unique message ID
+      const messageId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+      // Construct proper WhatsApp message structure
       const payload = {
         merchant_id: merchantId,
         customer_phone: customerPhone,
-        message: message,
-        message_type: 'text',
-        timestamp: new Date().toISOString(),
+        message: {
+          id: messageId,
+          from: customerPhone,
+          timestamp: new Date().toISOString(),
+          type: 'text',
+          text: message
+        },
+        conversation_history: []
       }
+
+      console.log('Sending payload:', JSON.stringify(payload, null, 2))
 
       const result = await axios.post(`${engineUrl}/conversation/process`, payload, {
         timeout: 30000,
@@ -49,8 +60,20 @@ export default function ConversationTester() {
 
       setResponse(result.data)
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to connect to conversation engine')
+      const errorDetail = err.response?.data?.detail || err.message || 'Failed to connect to conversation engine'
+
+      // Show validation errors if available
+      if (err.response?.data?.detail && Array.isArray(err.response.data.detail)) {
+        const validationErrors = err.response.data.detail
+          .map((e: any) => `${e.loc.join('.')}: ${e.msg}`)
+          .join(', ')
+        setError(`Validation Error: ${validationErrors}`)
+      } else {
+        setError(errorDetail)
+      }
+
       console.error('Error:', err)
+      console.error('Response data:', err.response?.data)
     } finally {
       setLoading(false)
     }
