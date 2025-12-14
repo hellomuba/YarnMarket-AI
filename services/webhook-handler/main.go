@@ -4,10 +4,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -25,13 +27,14 @@ import (
 
 // Configuration
 type Config struct {
-	Port                string
-	RedisURL            string
-	RabbitMQURL         string
-	DatabaseURL         string
-	WhatsAppVerifyToken string
-	WhatsAppAccessToken string
-	ConversationAPIURL  string
+	Port                 string
+	RedisURL             string
+	RabbitMQURL          string
+	DatabaseURL          string
+	WhatsAppVerifyToken  string
+	WhatsAppAccessToken  string
+	WhatsAppPhoneNumberID string
+	ConversationAPIURL   string
 }
 
 // WhatsApp message structures
@@ -462,8 +465,128 @@ func (wh *WebhookHandler) SendMessage(c *gin.Context) {
 }
 
 func (wh *WebhookHandler) sendToWhatsApp(response WhatsAppResponse) error {
-	// TODO: Implement actual WhatsApp Business API call
-	log.Printf("📤 Sending message to %s: %+v", response.To, response)
+	if wh.config.WhatsAppPhoneNumberID == "" {
+		return fmt.Errorf("WHATSAPP_PHONE_NUMBER_ID not configured")
+	}
+
+	url := fmt.Sprintf("https://graph.facebook.com/v18.0/%s/messages",
+		wh.config.WhatsAppPhoneNumberID)
+
+	// Set messaging_product for WhatsApp API
+	payload := map[string]interface{}{
+		"messaging_product": "whatsapp",
+		"to":                response.To,
+		"type":              response.Type,
+	}
+
+	if response.Text != nil {
+		payload["text"] = map[string]string{
+			"body": response.Text.Body,
+		}
+	}
+
+	if response.Interactive != nil {
+		payload["interactive"] = response.Interactive
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal response: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+wh.config.WhatsAppAccessToken)
+
+	resp, err := wh.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("WhatsApp API error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	log.Printf("✅ Message sent successfully to %s", response.To)
+	log.Printf("📤 WhatsApp API response: %s", string(body))
+	return nil
+}
+
+// StartOutgoingMessageConsumer starts consuming outgoing messages from RabbitMQ
+func (wh *WebhookHandler) StartOutgoingMessageConsumer() error {
+	// Declare outgoing queue
+	queue, err := wh.rabbitCh.QueueDeclare(
+		"outgoing_messages", // name
+		true,                // durable
+		false,               // delete when unused
+		false,               // exclusive
+		false,               // no-wait
+		nil,                 // arguments
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare outgoing queue: %v", err)
+	}
+
+	// Start consuming
+	msgs, err := wh.rabbitCh.Consume(
+		queue.Name, // queue
+		"",         // consumer
+		false,      // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
+	)
+	if err != nil {
+		return fmt.Errorf("failed to register consumer: %v", err)
+	}
+
+	// Process messages in background
+	go func() {
+		for msg := range msgs {
+			var outgoingMsg struct {
+				To         string `json:"to"`
+				MerchantID string `json:"merchant_id"`
+				Text       string `json:"text"`
+				MessageID  string `json:"message_id"`
+			}
+
+			if err := json.Unmarshal(msg.Body, &outgoingMsg); err != nil {
+				log.Printf("❌ Failed to unmarshal outgoing message: %v", err)
+				msg.Nack(false, false)
+				continue
+			}
+
+			log.Printf("📬 Processing outgoing message to %s", outgoingMsg.To)
+
+			// Prepare WhatsApp response
+			response := WhatsAppResponse{
+				To:   outgoingMsg.To,
+				Type: "text",
+				Text: &TextBody{
+					Body: outgoingMsg.Text,
+				},
+			}
+
+			// Send to WhatsApp
+			if err := wh.sendToWhatsApp(response); err != nil {
+				log.Printf("❌ Failed to send message to WhatsApp: %v", err)
+				msg.Nack(false, true) // Requeue on failure
+			} else {
+				log.Printf("✅ Sent message to %s", outgoingMsg.To)
+				msg.Ack(false)
+			}
+		}
+	}()
+
+	log.Println("✅ Started consuming outgoing messages")
 	return nil
 }
 
@@ -523,13 +646,14 @@ func (wh *WebhookHandler) Close() {
 
 func loadConfig() *Config {
 	return &Config{
-		Port:                getEnv("PORT", "8080"),
-		RedisURL:            getEnv("REDIS_URL", "redis://localhost:6379"),
-		RabbitMQURL:         getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
-		DatabaseURL:         getEnv("DATABASE_URL", "postgresql://yarnmarket:password@localhost:5432/yarnmarket"),
-		WhatsAppVerifyToken: getEnv("WHATSAPP_VERIFY_TOKEN", ""),
-		WhatsAppAccessToken: getEnv("WHATSAPP_ACCESS_TOKEN", ""),
-		ConversationAPIURL:  getEnv("CONVERSATION_API_URL", "http://localhost:8001"),
+		Port:                 getEnv("PORT", "8080"),
+		RedisURL:             getEnv("REDIS_URL", "redis://localhost:6379"),
+		RabbitMQURL:          getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
+		DatabaseURL:          getEnv("DATABASE_URL", "postgresql://yarnmarket:password@localhost:5432/yarnmarket"),
+		WhatsAppVerifyToken:  getEnv("WHATSAPP_VERIFY_TOKEN", ""),
+		WhatsAppAccessToken:  getEnv("WHATSAPP_ACCESS_TOKEN", ""),
+		WhatsAppPhoneNumberID: getEnv("WHATSAPP_PHONE_NUMBER_ID", ""),
+		ConversationAPIURL:   getEnv("CONVERSATION_API_URL", "http://localhost:8001"),
 	}
 }
 
@@ -556,6 +680,11 @@ func main() {
 		log.Fatalf("❌ Failed to initialize webhook handler: %v", err)
 	}
 	defer handler.Close()
+
+	// Start consuming outgoing messages
+	if err := handler.StartOutgoingMessageConsumer(); err != nil {
+		log.Fatalf("❌ Failed to start outgoing message consumer: %v", err)
+	}
 
 	// Setup Gin router
 	gin.SetMode(gin.ReleaseMode)
