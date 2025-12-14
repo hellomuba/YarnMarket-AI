@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { dashboardAPI, Metrics, Conversation } from '../lib/api'
+import DashboardLayout from '@/components/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
-  Menu, X, LayoutDashboard, MessageSquare, BarChart3, Settings,
-  Search, Filter, Bell, TrendingUp, TrendingDown, Globe, Users, Zap
+  MessageSquare, BarChart3, Search, Filter, TrendingUp, TrendingDown, Globe, Users, Zap
 } from 'lucide-react'
 
 // Loading Skeleton Component
@@ -96,12 +96,11 @@ const LanguageBar = ({
 )
 
 export default function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isLoading, setIsLoading] = useState(true)
+  const [isConnected, setIsConnected] = useState(true)
 
   const [metrics, setMetrics] = useState<Metrics>({
     activeConversations: 247,
@@ -140,29 +139,7 @@ export default function Dashboard() {
       status: 'active',
       messageCount: 12
     },
-    {
-      id: '4',
-      customerPhone: '+234807654321',
-      customerName: 'Fatima Abubakar',
-      lastMessage: 'Na how much be this bag?',
-      timestamp: '2:20 PM',
-      language: 'pidgin',
-      status: 'active',
-      messageCount: 3
-    },
-    {
-      id: '5',
-      customerPhone: '+234901234567',
-      customerName: 'Chinedu Okafor',
-      lastMessage: 'I need this delivered to Lagos today',
-      timestamp: '2:15 PM',
-      language: 'english',
-      status: 'active',
-      messageCount: 6
-    }
   ])
-
-  const [isConnected, setIsConnected] = useState(true)
 
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 1500)
@@ -204,428 +181,257 @@ export default function Dashboard() {
     return matchesSearch && matchesFilter
   })
 
-  const sidebarNavItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, href: '/', current: true },
-    { name: 'Conversations', icon: MessageSquare, href: '/conversations', current: false, badge: conversations.length },
-    { name: 'Analytics', icon: BarChart3, href: '/analytics', current: false },
-    { name: 'Settings', icon: Settings, href: '/settings', current: false },
-  ]
-
   return (
-    <div className={darkMode ? 'dark' : ''}>
-      <div className="min-h-screen bg-background">
-
-        {/* Sidebar */}
-        <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-300 lg:translate-x-0`}>
-
-          {/* Logo */}
-          <div className="p-6 border-b">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-xl">
-                  🇳🇬
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold">YarnMarket AI</h1>
-                  <p className="text-xs text-muted-foreground">Nigerian Commerce</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between px-3 py-2 bg-muted rounded-lg text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span className="font-medium">Lagos Time</span>
-              </div>
-              <span className="font-mono font-semibold">
-                {currentTime.toLocaleTimeString('en-NG', {
-                  timeZone: 'Africa/Lagos',
-                  hour12: true,
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="p-4 space-y-1">
-            {sidebarNavItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    item.current
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </div>
-                  {item.badge && (
-                    <Badge variant="secondary">{item.badge}</Badge>
-                  )}
-                </a>
-              )
-            })}
-          </nav>
-
-          {/* Status */}
-          <div className="absolute bottom-6 left-4 right-4">
-            <Card className={isConnected ? 'border-primary/20 bg-primary/5' : 'border-yellow-500/20 bg-yellow-500/5'}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-primary' : 'bg-yellow-500'} animate-pulse`}></div>
-                  <span className="text-sm font-semibold">
-                    {isLoading ? 'Initializing...' : isConnected ? 'Live System' : 'Demo Mode'}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {isConnected ? 'All services operational' : 'Using sample data'}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </aside>
-
-        {/* Main content */}
-        <div className="lg:pl-64">
-          {/* Header */}
-          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-            <div className="flex items-center justify-between h-16 px-6">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-                <div>
-                  <h1 className="text-xl font-bold">Nigerian Market Hub</h1>
-                  <p className="text-sm text-muted-foreground">Real-time commerce analytics</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setDarkMode(!darkMode)}
-                >
-                  <span className="text-lg">{darkMode ? '☀️' : '🌙'}</span>
-                </Button>
-
-                <Button variant="outline" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
-                </Button>
-
-                <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-semibold">
-                  <span>U</span>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          {/* Dashboard Content */}
-          <main className="p-6 space-y-6">
-
-            {/* Status Badge */}
-            <div className="flex justify-center">
-              <Badge variant={isConnected ? 'default' : 'secondary'} className="gap-2">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-primary-foreground' : 'bg-secondary-foreground'} animate-pulse`}></div>
-                {isLoading ? 'Starting up...' : isConnected ? 'System Live' : 'Demo Mode'}
-              </Badge>
-            </div>
-
-            {/* Page Title */}
-            <div className="text-center space-y-2">
-              <h2 className="text-4xl font-bold tracking-tight">Naija Market Analytics</h2>
-              <p className="text-muted-foreground">
-                Real-time insights from your conversational commerce platform
-              </p>
-            </div>
-
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MetricCard
-                title="Active Conversations"
-                value={metrics.activeConversations}
-                change="+12%"
-                changeType="increase"
-                icon={MessageSquare}
-                subtitle="Across all channels"
-                isLoading={isLoading}
-              />
-              <MetricCard
-                title="Today's Revenue"
-                value={`₦${(metrics.totalRevenue / 1000).toFixed(0)}K`}
-                change="+₦85K"
-                changeType="increase"
-                icon={BarChart3}
-                subtitle="vs yesterday (+11.1%)"
-                isLoading={isLoading}
-              />
-              <MetricCard
-                title="Conversion Rate"
-                value={`${metrics.conversionRate}%`}
-                change="+5.2%"
-                changeType="increase"
-                icon={TrendingUp}
-                subtitle="Industry leading"
-                isLoading={isLoading}
-              />
-              <MetricCard
-                title="Response Time"
-                value={`${metrics.avgResponseTime}ms`}
-                change="-15ms"
-                changeType="decrease"
-                icon={Zap}
-                subtitle="Target achieved"
-                isLoading={isLoading}
-              />
-            </div>
-
-            {/* Search */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search customers, messages, or phone numbers..."
-                      className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2 px-4 py-2 border rounded-lg bg-background">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <select
-                      className="border-none bg-transparent focus:outline-none"
-                      value={selectedFilter}
-                      onChange={(e) => setSelectedFilter(e.target.value)}
-                    >
-                      <option value="all">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="negotiating">Negotiating</option>
-                      <option value="waiting">Waiting</option>
-                    </select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Analytics Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-              {/* Language Distribution */}
-              <Card className="xl:col-span-2">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Globe className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle>Language Analytics</CardTitle>
-                      <CardDescription>Customer communication preferences</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <LanguageBar flag="🇳🇬" name="Nigerian Pidgin" percentage={45} />
-                  <LanguageBar flag="🇬🇧" name="English" percentage={35} />
-                  <LanguageBar flag="👑" name="Yoruba" percentage={12} />
-                  <LanguageBar flag="🦅" name="Igbo" percentage={5} />
-                  <LanguageBar flag="🌾" name="Hausa" percentage={3} />
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      Start Campaign
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Export Report
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <Settings className="h-4 w-4" />
-                      AI Settings
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-primary text-primary-foreground">
-                  <CardHeader>
-                    <CardTitle className="text-base">Today's Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="opacity-90">Total Interactions</span>
-                      <span className="font-bold">{metrics.activeConversations + 156}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="opacity-90">Revenue Growth</span>
-                      <span className="font-bold">+11.1%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="opacity-90">Satisfaction</span>
-                      <span className="font-bold">96.8%</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            {/* Live Conversations */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <MessageSquare className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle>Live Customer Conversations</CardTitle>
-                      <CardDescription>{filteredConversations.length} active chats</CardDescription>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Badge variant="default" className="gap-1">
-                      <div className="w-2 h-2 bg-primary-foreground rounded-full animate-pulse"></div>
-                      {conversations.filter(c => c.status === 'active').length} Active
-                    </Badge>
-                    <Badge variant="secondary" className="gap-1">
-                      <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-pulse"></div>
-                      {conversations.filter(c => c.status === 'negotiating').length} Negotiating
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <div className="space-y-4">
-                  {isLoading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="flex gap-4 p-4 border rounded-lg animate-pulse">
-                        <div className="w-12 h-12 bg-muted rounded-lg"></div>
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 w-32 bg-muted rounded"></div>
-                          <div className="h-3 w-full bg-muted rounded"></div>
-                          <div className="h-3 w-24 bg-muted rounded"></div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    filteredConversations.map((conv) => (
-                      <div key={conv.id} className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors group cursor-pointer">
-                        <div className="relative flex-shrink-0">
-                          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-semibold">
-                            {conv.customerName ? conv.customerName.split(' ').map(n => n[0]).join('') : conv.customerPhone.slice(-2)}
-                          </div>
-                          <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
-                            conv.status === 'active' ? 'bg-primary' : 'bg-yellow-500'
-                          }`}></div>
-                        </div>
-
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold truncate">
-                                {conv.customerName || conv.customerPhone}
-                              </h3>
-                              <span className="text-sm text-muted-foreground">{conv.timestamp}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={conv.status === 'active' ? 'default' : 'secondary'}>
-                                {conv.status}
-                              </Badge>
-                              <Badge variant="outline">
-                                {conv.language === 'pidgin' ? '🇳🇬' : '🇬🇧'} {conv.language}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          <div className="p-3 bg-muted rounded-lg">
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              "{conv.lastMessage}"
-                            </p>
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" />
-                                {conv.messageCount} messages
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Zap className="h-3 w-3" />
-                                98% accuracy
-                              </span>
-                            </div>
-                            <Button size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              Open Chat →
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-
-              <div className="border-t p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                    <span>{filteredConversations.length} conversations active</span>
-                    <span>•</span>
-                    <span>Updated {currentTime.toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos' })}</span>
-                  </div>
-                  <Button>
-                    <Users className="h-4 w-4 mr-2" />
-                    Manage Customers
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </main>
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
+        {/* Status Badge */}
+        <div className="flex justify-center">
+          <Badge variant={isConnected ? 'default' : 'secondary'} className="gap-2">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-primary-foreground' : 'bg-secondary-foreground'} animate-pulse`}></div>
+            {isLoading ? 'Starting up...' : isConnected ? 'System Live' : 'Demo Mode'}
+          </Badge>
         </div>
 
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setSidebarOpen(false)}>
-            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm"></div>
+        {/* Page Title */}
+        <div className="text-center space-y-2">
+          <h2 className="text-4xl font-bold tracking-tight">Naija Market Analytics</h2>
+          <p className="text-muted-foreground">
+            Real-time insights from your conversational commerce platform
+          </p>
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            title="Active Conversations"
+            value={metrics.activeConversations}
+            change="+12%"
+            changeType="increase"
+            icon={MessageSquare}
+            subtitle="Across all channels"
+            isLoading={isLoading}
+          />
+          <MetricCard
+            title="Today's Revenue"
+            value={`₦${(metrics.totalRevenue / 1000).toFixed(0)}K`}
+            change="+₦85K"
+            changeType="increase"
+            icon={BarChart3}
+            subtitle="vs yesterday (+11.1%)"
+            isLoading={isLoading}
+          />
+          <MetricCard
+            title="Conversion Rate"
+            value={`${metrics.conversionRate}%`}
+            change="+5.2%"
+            changeType="increase"
+            icon={TrendingUp}
+            subtitle="Industry leading"
+            isLoading={isLoading}
+          />
+          <MetricCard
+            title="Response Time"
+            value={`${metrics.avgResponseTime}ms`}
+            change="-15ms"
+            changeType="decrease"
+            icon={Zap}
+            subtitle="Target achieved"
+            isLoading={isLoading}
+          />
+        </div>
+
+        {/* Search */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search customers, messages, or phone numbers..."
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 px-4 py-2 border rounded-lg bg-background">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <select
+                  className="border-none bg-transparent focus:outline-none"
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="negotiating">Negotiating</option>
+                  <option value="waiting">Waiting</option>
+                </select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Analytics Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Language Distribution */}
+          <Card className="xl:col-span-2">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Globe className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Language Analytics</CardTitle>
+                  <CardDescription>Customer communication preferences</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <LanguageBar flag="🇳🇬" name="Nigerian Pidgin" percentage={45} />
+              <LanguageBar flag="🇬🇧" name="English" percentage={35} />
+              <LanguageBar flag="👑" name="Yoruba" percentage={12} />
+              <LanguageBar flag="🦅" name="Igbo" percentage={5} />
+              <LanguageBar flag="🌾" name="Hausa" percentage={3} />
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="bg-primary text-primary-foreground">
+            <CardHeader>
+              <CardTitle className="text-base">Today's Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between">
+                <span className="opacity-90">Total Interactions</span>
+                <span className="font-bold">{metrics.activeConversations + 156}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="opacity-90">Revenue Growth</span>
+                <span className="font-bold">+11.1%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="opacity-90">Satisfaction</span>
+                <span className="font-bold">96.8%</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Live Conversations */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Live Customer Conversations</CardTitle>
+                  <CardDescription>{filteredConversations.length} active chats</CardDescription>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Badge variant="default" className="gap-1">
+                  <div className="w-2 h-2 bg-primary-foreground rounded-full animate-pulse"></div>
+                  {conversations.filter(c => c.status === 'active').length} Active
+                </Badge>
+                <Badge variant="secondary" className="gap-1">
+                  <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-pulse"></div>
+                  {conversations.filter(c => c.status === 'negotiating').length} Negotiating
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <div className="space-y-4">
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex gap-4 p-4 border rounded-lg animate-pulse">
+                    <div className="w-12 h-12 bg-muted rounded-lg"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-32 bg-muted rounded"></div>
+                      <div className="h-3 w-full bg-muted rounded"></div>
+                      <div className="h-3 w-24 bg-muted rounded"></div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                filteredConversations.map((conv) => (
+                  <div key={conv.id} className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors group cursor-pointer">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-semibold">
+                        {conv.customerName ? conv.customerName.split(' ').map(n => n[0]).join('') : conv.customerPhone.slice(-2)}
+                      </div>
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
+                        conv.status === 'active' ? 'bg-primary' : 'bg-yellow-500'
+                      }`}></div>
+                    </div>
+
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold truncate">
+                            {conv.customerName || conv.customerPhone}
+                          </h3>
+                          <span className="text-sm text-muted-foreground">{conv.timestamp}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={conv.status === 'active' ? 'default' : 'secondary'}>
+                            {conv.status}
+                          </Badge>
+                          <Badge variant="outline">
+                            {conv.language === 'pidgin' ? '🇳🇬' : '🇬🇧'} {conv.language}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-muted rounded-lg">
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          "{conv.lastMessage}"
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <MessageSquare className="h-3 w-3" />
+                            {conv.messageCount} messages
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Zap className="h-3 w-3" />
+                            98% accuracy
+                          </span>
+                        </div>
+                        <Button size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          Open Chat →
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+
+          <div className="border-t p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                <span>{filteredConversations.length} conversations active</span>
+                <span>•</span>
+                <span>Updated {currentTime.toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos' })}</span>
+              </div>
+              <Button>
+                <Users className="h-4 w-4 mr-2" />
+                Manage Customers
+              </Button>
+            </div>
           </div>
-        )}
+        </Card>
       </div>
-    </div>
+    </DashboardLayout>
   )
 }
