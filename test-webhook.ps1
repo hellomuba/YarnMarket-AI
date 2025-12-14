@@ -124,12 +124,12 @@ Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "Test Summary" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "✅ Next Steps:" -ForegroundColor Green
+Write-Host "Next Steps:" -ForegroundColor Green
 Write-Host "1. Check Railway logs for webhook-handler to see if message was queued"
 Write-Host "2. Check Railway logs for message-worker to see if message was consumed"
 Write-Host "3. Check Railway logs for conversation-engine to see if AI processed it"
 Write-Host ""
-Write-Host "🔍 To test with real WhatsApp:" -ForegroundColor Yellow
+Write-Host "To test with real WhatsApp:" -ForegroundColor Yellow
 Write-Host "1. Configure webhook in Meta Developer Console:"
 Write-Host "   URL: $WEBHOOK_URL/webhook"
 Write-Host "2. Send a message from your WhatsApp to your business number"
