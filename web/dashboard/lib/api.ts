@@ -1,11 +1,15 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost'
 
+// Helper function to remove trailing slashes
+const removeTrailingSlash = (url: string) => url.replace(/\/+$/, '')
+
 // API endpoints
 const ENDPOINTS = {
   conversationEngine: `${API_BASE_URL}:8003`,
-  merchantApi: `${API_BASE_URL}:3005`, 
+  merchantApi: `${API_BASE_URL}:3005`,
   analyticsService: `${API_BASE_URL}:8004`,
-  webhookHandler: `${API_BASE_URL}:8082`
+  webhookHandler: `${API_BASE_URL}:8082`,
+  dashboardApi: removeTrailingSlash(process.env.NEXT_PUBLIC_DASHBOARD_API_URL || `${API_BASE_URL}:8005`)
 }
 
 // Types
@@ -29,6 +33,43 @@ export interface Metrics {
 
 export interface LanguageStats {
   [language: string]: number
+}
+
+export interface ProductVariant {
+  id?: number
+  sku?: string
+  variant_name: string
+  colour?: string
+  size?: string
+  price: number
+  stock_quantity: number
+  availability: boolean
+  image_url?: string
+  metadata?: Record<string, any>
+}
+
+export interface Product {
+  id?: number
+  merchant_id?: number
+  name: string
+  description?: string
+  brand?: string
+  category: 'Clothing' | 'Electronics' | 'Food & Groceries' | 'Beauty & Personal Care' |
+            'Home & Living' | 'Sports & Outdoors' | 'Books & Media' | 'Toys & Games' | 'Other'
+  product_type: 'simple' | 'advanced'
+  base_price: number
+  currency: string
+  ean?: string
+  image_url?: string
+  metadata?: Record<string, any>
+  is_active: boolean
+  variants?: ProductVariant[]
+  created_at?: string
+
+  // Legacy fields for backward compatibility
+  price?: number
+  in_stock?: boolean
+  stock_quantity?: number
 }
 
 // API Functions
@@ -133,6 +174,60 @@ export class DashboardAPI {
         'Igbo': 5,
         'Hausa': 3
       }
+    }
+  }
+
+  async getProducts(merchantId: number = 1): Promise<Product[]> {
+    try {
+      const data = await this.fetchWithTimeout(`${ENDPOINTS.dashboardApi}/api/products?merchant_id=${merchantId}`)
+      return data
+    } catch (error) {
+      console.warn('Failed to fetch products from API:', error)
+      return []
+    }
+  }
+
+  async createProduct(product: Omit<Product, 'id' | 'created_at'>): Promise<Product> {
+    try {
+      const data = await this.fetchWithTimeout(
+        `${ENDPOINTS.dashboardApi}/api/products`,
+        {
+          method: 'POST',
+          body: JSON.stringify(product)
+        }
+      )
+      return data
+    } catch (error) {
+      console.error('Failed to create product:', error)
+      throw error
+    }
+  }
+
+  async updateProduct(productId: number, product: Omit<Product, 'id' | 'created_at'>): Promise<Product> {
+    try {
+      const data = await this.fetchWithTimeout(
+        `${ENDPOINTS.dashboardApi}/api/products/${productId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(product)
+        }
+      )
+      return data
+    } catch (error) {
+      console.error('Failed to update product:', error)
+      throw error
+    }
+  }
+
+  async deleteProduct(productId: number, merchantId: number = 1): Promise<void> {
+    try {
+      await this.fetchWithTimeout(
+        `${ENDPOINTS.dashboardApi}/api/products/${productId}?merchant_id=${merchantId}`,
+        { method: 'DELETE' }
+      )
+    } catch (error) {
+      console.error('Failed to delete product:', error)
+      throw error
     }
   }
 

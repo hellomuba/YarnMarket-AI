@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -19,6 +20,7 @@ import (
 	"github.com/streadway/amqp"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	_ "github.com/lib/pq"
 )
 
 // Configuration
@@ -26,6 +28,7 @@ type Config struct {
 	Port                string
 	RedisURL            string
 	RabbitMQURL         string
+	DatabaseURL         string
 	WhatsAppVerifyToken string
 	WhatsAppAccessToken string
 	ConversationAPIURL  string
@@ -173,6 +176,7 @@ func init() {
 // WebhookHandler handles WhatsApp webhooks
 type WebhookHandler struct {
 	config      *Config
+	db          *sql.DB
 	redisClient *redis.Client
 	rabbitConn  *amqp.Connection
 	rabbitCh    *amqp.Channel
@@ -180,6 +184,25 @@ type WebhookHandler struct {
 }
 
 func NewWebhookHandler(config *Config) (*WebhookHandler, error) {
+	// PostgreSQL connection
+	db, err := sql.Open("postgres", config.DatabaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %v", err)
+	}
+
+	// Configure connection pool
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	// Test database connection
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := db.PingContext(ctx); err != nil {
+		return nil, fmt.Errorf("database connection failed: %v", err)
+	}
+	log.Println("✅ Database connection established")
+
 	// Redis connection
 	opt, err := redis.ParseURL(config.RedisURL)
 	if err != nil {
@@ -188,9 +211,9 @@ func NewWebhookHandler(config *Config) (*WebhookHandler, error) {
 	redisClient := redis.NewClient(opt)
 
 	// Test Redis connection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := redisClient.Ping(ctx).Err(); err != nil {
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel2()
+	if err := redisClient.Ping(ctx2).Err(); err != nil {
 		return nil, fmt.Errorf("Redis connection failed: %v", err)
 	}
 
@@ -220,6 +243,7 @@ func NewWebhookHandler(config *Config) (*WebhookHandler, error) {
 
 	return &WebhookHandler{
 		config:      config,
+		db:          db,
 		redisClient: redisClient,
 		rabbitConn:  conn,
 		rabbitCh:    ch,
@@ -353,22 +377,44 @@ func (wh *WebhookHandler) processWebhookPayload(payload WhatsAppWebhook, startTi
 func (wh *WebhookHandler) getMerchantID(businessPhone string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	
+
 	// Try to get from cache first
 	cacheKey := fmt.Sprintf("merchant:phone:%s", businessPhone)
 	merchantID, err := wh.redisClient.Get(ctx, cacheKey).Result()
 	if err == nil {
+		log.Printf("✅ Cache hit: merchant %s for phone %s", merchantID, businessPhone)
 		return merchantID, nil
 	}
-	
-	// TODO: Query database to get merchant ID by business phone
-	// For now, return a default merchant ID
-	merchantID = "default_merchant"
-	
-	// Cache the result
-	wh.redisClient.Set(ctx, cacheKey, merchantID, time.Hour)
-	
-	return merchantID, nil
+
+	// Query database to get merchant ID by business phone
+	log.Printf("🔍 Looking up merchant for phone: %s", businessPhone)
+
+	var dbMerchantID string
+	query := `
+		SELECT id::text
+		FROM merchants
+		WHERE phone_number = $1
+		  AND status = 'active'
+		  AND phone_number_id IS NOT NULL
+		LIMIT 1
+	`
+
+	err = wh.db.QueryRowContext(ctx, query, businessPhone).Scan(&dbMerchantID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("❌ No merchant found for phone %s", businessPhone)
+			return "", fmt.Errorf("merchant not found for phone %s", businessPhone)
+		}
+		log.Printf("❌ Database query error: %v", err)
+		return "", fmt.Errorf("database error: %v", err)
+	}
+
+	log.Printf("✅ Found merchant %s for phone %s", dbMerchantID, businessPhone)
+
+	// Cache the result for 1 hour
+	wh.redisClient.Set(ctx, cacheKey, dbMerchantID, time.Hour)
+
+	return dbMerchantID, nil
 }
 
 func (wh *WebhookHandler) queueMessage(job ProcessingJob) error {
@@ -423,10 +469,19 @@ func (wh *WebhookHandler) sendToWhatsApp(response WhatsAppResponse) error {
 
 // Health check endpoint
 func (wh *WebhookHandler) HealthCheck(c *gin.Context) {
-	// Check Redis connection
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	
+
+	// Check database connection
+	if err := wh.db.PingContext(ctx); err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"status": "unhealthy",
+			"error":  "Database connection failed",
+		})
+		return
+	}
+
+	// Check Redis connection
 	if err := wh.redisClient.Ping(ctx).Err(); err != nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"status": "unhealthy",
@@ -461,6 +516,9 @@ func (wh *WebhookHandler) Close() {
 	if wh.redisClient != nil {
 		wh.redisClient.Close()
 	}
+	if wh.db != nil {
+		wh.db.Close()
+	}
 }
 
 func loadConfig() *Config {
@@ -468,6 +526,7 @@ func loadConfig() *Config {
 		Port:                getEnv("PORT", "8080"),
 		RedisURL:            getEnv("REDIS_URL", "redis://localhost:6379"),
 		RabbitMQURL:         getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
+		DatabaseURL:         getEnv("DATABASE_URL", "postgresql://yarnmarket:password@localhost:5432/yarnmarket"),
 		WhatsAppVerifyToken: getEnv("WHATSAPP_VERIFY_TOKEN", ""),
 		WhatsAppAccessToken: getEnv("WHATSAPP_ACCESS_TOKEN", ""),
 		ConversationAPIURL:  getEnv("CONVERSATION_API_URL", "http://localhost:8001"),

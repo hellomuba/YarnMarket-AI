@@ -8,13 +8,16 @@ WORKDIR /app
 
 # Copy go mod files
 COPY go.mod ./
-COPY go.su[m] ./
+COPY go.sum ./
 
-# Download dependencies and generate go.sum if missing
-RUN go mod tidy && go mod download
+# Download dependencies (only download, don't tidy yet)
+RUN go mod download
 
 # Copy source code
 COPY . .
+
+# Ensure dependencies are up to date
+RUN go mod tidy
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o webhook-handler .

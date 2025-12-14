@@ -1,5 +1,6 @@
 import './globals.css'
-import Layout from '../components/Layout'
+import type { ReactNode } from 'react'
+import ClientLayout from './client-layout'
 
 export const metadata = {
   title: 'YarnMarket AI Dashboard - 🇳🇬 Nigerian Conversational Commerce',
@@ -16,7 +17,7 @@ export const viewport = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <html lang="en">
@@ -26,9 +27,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#10B981" />
       </head>
       <body className="antialiased">
-        <Layout>
+        <ClientLayout>
           {children}
-        </Layout>
+        </ClientLayout>
       </body>
     </html>
   )
