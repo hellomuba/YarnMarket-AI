@@ -1,15 +1,19 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Package, Upload, Plus, Search, Download, FileUp } from 'lucide-react'
+import { dashboardAPI, type Product } from '@/lib/api'
 
 export default function ProductsPage() {
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -20,21 +24,62 @@ export default function ProductsPage() {
     stock_quantity: ''
   })
 
+  // Load products on mount
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true)
+      const data = await dashboardAPI.getProducts(1) // TODO: Get merchant_id from auth
+      setProducts(data)
+    } catch (error) {
+      console.error('Failed to load products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: API call to upload product
-    console.log('Product data:', formData)
-    alert('Product uploaded successfully!')
-    setShowUploadForm(false)
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      currency: 'NGN',
-      category: '',
-      in_stock: true,
-      stock_quantity: ''
-    })
+    setSubmitting(true)
+
+    try {
+      const productData: Omit<Product, 'id' | 'created_at'> = {
+        merchant_id: 1, // TODO: Get from auth context
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        currency: formData.currency,
+        category: formData.category,
+        in_stock: formData.in_stock,
+        stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : undefined
+      }
+
+      await dashboardAPI.createProduct(productData)
+      alert('Product uploaded successfully!')
+
+      // Reset form
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        currency: 'NGN',
+        category: '',
+        in_stock: true,
+        stock_quantity: ''
+      })
+      setShowUploadForm(false)
+
+      // Reload products
+      await loadProducts()
+    } catch (error) {
+      console.error('Failed to upload product:', error)
+      alert('Failed to upload product. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -239,12 +284,12 @@ export default function ProductsPage() {
 
               {/* Submit Button */}
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowUploadForm(false)}>
+                <Button type="button" variant="outline" onClick={() => setShowUploadForm(false)} disabled={submitting}>
                   Cancel
                 </Button>
-                <Button type="submit" className="gap-2">
+                <Button type="submit" className="gap-2" disabled={submitting}>
                   <Upload className="h-4 w-4" />
-                  Upload Product
+                  {submitting ? 'Uploading...' : 'Upload Product'}
                 </Button>
               </div>
             </form>
@@ -331,36 +376,42 @@ export default function ProductsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Sample products */}
-            {[
-              { name: 'Cotton Shirt', category: 'clothing', price: 15000, currency: 'NGN', inStock: true, quantity: 50 },
-              { name: 'Jeans', category: 'clothing', price: 25000, currency: 'NGN', inStock: true, quantity: 30 },
-              { name: 'Smartphone', category: 'electronics', price: 150000, currency: 'NGN', inStock: true, quantity: 15 },
-              { name: 'Rice (50kg)', category: 'food', price: 35000, currency: 'NGN', inStock: false, quantity: 0 },
-            ].map((product, idx) => (
-              <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Package className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize">{product.category}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-bold">
-                      {product.currency === 'NGN' ? '₦' : '$'}{product.price.toLocaleString()}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{product.quantity} units</p>
-                  </div>
-                  <Badge variant={product.inStock ? 'default' : 'secondary'}>
-                    {product.inStock ? 'In Stock' : 'Out of Stock'}
-                  </Badge>
-                </div>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading products...
               </div>
-            ))}
+            ) : products.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No products yet. Add your first product above!
+              </div>
+            ) : (
+              products.map((product) => (
+                <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Package className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground capitalize">{product.category}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-bold">
+                        {product.currency === 'NGN' ? '₦' : '$'}{product.price.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {product.stock_quantity || 0} units
+                      </p>
+                    </div>
+                    <Badge variant={product.in_stock ? 'default' : 'secondary'}>
+                      {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

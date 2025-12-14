@@ -3,9 +3,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost'
 // API endpoints
 const ENDPOINTS = {
   conversationEngine: `${API_BASE_URL}:8003`,
-  merchantApi: `${API_BASE_URL}:3005`, 
+  merchantApi: `${API_BASE_URL}:3005`,
   analyticsService: `${API_BASE_URL}:8004`,
-  webhookHandler: `${API_BASE_URL}:8082`
+  webhookHandler: `${API_BASE_URL}:8082`,
+  dashboardApi: process.env.NEXT_PUBLIC_DASHBOARD_API_URL || `${API_BASE_URL}:8005`
 }
 
 // Types
@@ -29,6 +30,19 @@ export interface Metrics {
 
 export interface LanguageStats {
   [language: string]: number
+}
+
+export interface Product {
+  id?: number
+  merchant_id?: number
+  name: string
+  description?: string
+  price: number
+  currency: string
+  category: string
+  in_stock: boolean
+  stock_quantity?: number
+  created_at?: string
 }
 
 // API Functions
@@ -133,6 +147,60 @@ export class DashboardAPI {
         'Igbo': 5,
         'Hausa': 3
       }
+    }
+  }
+
+  async getProducts(merchantId: number = 1): Promise<Product[]> {
+    try {
+      const data = await this.fetchWithTimeout(`${ENDPOINTS.dashboardApi}/api/products?merchant_id=${merchantId}`)
+      return data
+    } catch (error) {
+      console.warn('Failed to fetch products from API:', error)
+      return []
+    }
+  }
+
+  async createProduct(product: Omit<Product, 'id' | 'created_at'>): Promise<Product> {
+    try {
+      const data = await this.fetchWithTimeout(
+        `${ENDPOINTS.dashboardApi}/api/products`,
+        {
+          method: 'POST',
+          body: JSON.stringify(product)
+        }
+      )
+      return data
+    } catch (error) {
+      console.error('Failed to create product:', error)
+      throw error
+    }
+  }
+
+  async updateProduct(productId: number, product: Omit<Product, 'id' | 'created_at'>): Promise<Product> {
+    try {
+      const data = await this.fetchWithTimeout(
+        `${ENDPOINTS.dashboardApi}/api/products/${productId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(product)
+        }
+      )
+      return data
+    } catch (error) {
+      console.error('Failed to update product:', error)
+      throw error
+    }
+  }
+
+  async deleteProduct(productId: number, merchantId: number = 1): Promise<void> {
+    try {
+      await this.fetchWithTimeout(
+        `${ENDPOINTS.dashboardApi}/api/products/${productId}?merchant_id=${merchantId}`,
+        { method: 'DELETE' }
+      )
+    } catch (error) {
+      console.error('Failed to delete product:', error)
+      throw error
     }
   }
 

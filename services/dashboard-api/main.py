@@ -65,8 +65,9 @@ app.add_middleware(
 )
 
 # Include API routers
-from routes import whatsapp_router
+from routes import whatsapp_router, products_router
 app.include_router(whatsapp_router)
+app.include_router(products_router)
 
 
 @app.get("/health")
