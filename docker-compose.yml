@@ -1,0 +1,149 @@
+services:
+  # PostgreSQL - Primary database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: yarnmarket
+      POSTGRES_USER: yarnmarket
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+
+  # Redis - Session state and caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+
+  # MongoDB - Conversation storage
+  mongodb:
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: yarnmarket
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  # ClickHouse - Analytics database
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - "8125:8123"
+      - "9002:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+  # RabbitMQ - Message queue
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: yarnmarket
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  # WhatsApp Webhook Handler (Go)
+  webhook-handler:
+    build:
+      context: ./services/webhook-handler
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://yarnmarket:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      - WHATSAPP_VERIFY_TOKEN=${WHATSAPP_VERIFY_TOKEN}
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
+    depends_on:
+      - redis
+      - rabbitmq
+
+  # Conversation Engine (Python FastAPI)
+  conversation-engine:
+    build:
+      context: ./services/conversation-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8001"
+    environment:
+      - DATABASE_URL=postgresql://yarnmarket:${POSTGRES_PASSWORD}@postgres:5432/yarnmarket
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://yarnmarket:${MONGO_PASSWORD}@mongodb:27017/
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./models:/app/models
+    depends_on:
+      - postgres
+      - redis
+      - mongodb
+
+  # Merchant API (NestJS)
+  merchant-api:
+    build:
+      context: ./services/merchant-api
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3001"
+    environment:
+      - DATABASE_URL=postgresql://yarnmarket:${POSTGRES_PASSWORD}@postgres:5432/yarnmarket
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+      - redis
+
+  # Analytics Service (Python)
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8002"
+    environment:
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - MONGODB_URL=mongodb://yarnmarket:${MONGO_PASSWORD}@mongodb:27017/
+    depends_on:
+      - clickhouse
+      - mongodb
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9092:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3004:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana:/etc/grafana/provisioning
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongodb_data:
+  clickhouse_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:

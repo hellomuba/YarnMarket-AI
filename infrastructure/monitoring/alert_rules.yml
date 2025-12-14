@@ -1,0 +1,201 @@
+# YarnMarket AI Alert Rules
+
+groups:
+  - name: yarnmarket_critical
+    rules:
+      # Service Health Alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "YarnMarket service is down"
+          description: "{{ $labels.job }} service has been down for more than 1 minute"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "{{ $labels.job }} has error rate above 10% for 2 minutes"
+
+      # Conversation Engine Specific
+      - alert: ConversationEngineHighLatency
+        expr: histogram_quantile(0.95, rate(message_processing_duration_seconds_bucket[5m])) > 1.0
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Conversation engine high latency"
+          description: "95th percentile latency is {{ $value }}s for 3 minutes"
+
+      - alert: ConversationEngineMemoryUsage
+        expr: (container_memory_usage_bytes{pod=~"conversation-engine.*"} / container_spec_memory_limit_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Conversation engine high memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} for 5 minutes"
+
+      - alert: AIModelInferenceFailure
+        expr: rate(ai_inference_failures_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AI model inference failures"
+          description: "AI model failing at {{ $value }} per second for 2 minutes"
+
+      # WhatsApp Integration
+      - alert: WhatsAppWebhookErrors
+        expr: rate(whatsapp_webhook_errors_total[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "WhatsApp webhook errors"
+          description: "WhatsApp webhook error rate: {{ $value }} per second"
+
+      - alert: WhatsAppMessageProcessingBacklog
+        expr: rabbitmq_queue_messages{queue="message_processing"} > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WhatsApp message processing backlog"
+          description: "{{ $value }} messages queued for processing"
+
+      # Business Metrics
+      - alert: ConversationConversionRateDrop
+        expr: (
+          rate(yarnmarket_conversations_completed_total{outcome="sale"}[1h]) / 
+          rate(yarnmarket_conversations_completed_total[1h])
+        ) < 0.3
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Conversation conversion rate dropped"
+          description: "Conversion rate is {{ $value | humanizePercentage }} over last hour"
+
+      - alert: CustomerSatisfactionLow
+        expr: avg_over_time(yarnmarket_customer_satisfaction_score[1h]) < 3.0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Customer satisfaction score low"
+          description: "Average satisfaction score is {{ $value }}/5 over last hour"
+
+      # Infrastructure Alerts
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL connection count high"
+          description: "{{ $value }} active connections to PostgreSQL"
+
+      - alert: RedisMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: MongoDBReplicationLag
+        expr: mongodb_replset_member_replication_lag > 10
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MongoDB replication lag"
+          description: "MongoDB replica lag is {{ $value }} seconds"
+
+  - name: yarnmarket_performance
+    rules:
+      # Performance Monitoring
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "{{ $labels.pod }} CPU usage is {{ $value | humanizePercentage }}"
+
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "{{ $labels.pod }} memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod crash looping"
+          description: "{{ $labels.pod }} is crash looping"
+
+      - alert: PersistentVolumeUsage
+        expr: (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Persistent volume usage high"
+          description: "Volume {{ $labels.persistentvolumeclaim }} usage is {{ $value | humanizePercentage }}"
+
+  - name: yarnmarket_business
+    rules:
+      # Business KPI Monitoring
+      - alert: DailyRevenueBelowTarget
+        expr: increase(yarnmarket_revenue_total[24h]) < 500000
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Daily revenue below target"
+          description: "Daily revenue is ₦{{ $value }} (target: ₦500k)"
+
+      - alert: ActiveConversationsLow
+        expr: yarnmarket_conversations_active < 50
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Active conversations unusually low"
+          description: "Only {{ $value }} active conversations"
+
+      - alert: NegotiationSuccessRateLow
+        expr: (
+          rate(yarnmarket_negotiations_total{outcome="accepted"}[4h]) / 
+          rate(yarnmarket_negotiations_total[4h])
+        ) < 0.4
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Negotiation success rate low"
+          description: "Success rate is {{ $value | humanizePercentage }} over 4 hours"
+
+      - alert: LanguageDetectionAccuracyLow
+        expr: yarnmarket_language_detection_accuracy < 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Language detection accuracy low"
+          description: "Language detection accuracy is {{ $value | humanizePercentage }}"

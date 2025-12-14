@@ -9,6 +9,7 @@ import {
 import { Card } from "@/components/ui/card";
 
 const features = [
+  
   {
     icon: MessageSquare,
     title: "Omnichannel Inbox",
