@@ -10,7 +10,7 @@ YarnMarket AI is a WhatsApp-native conversational commerce platform that brings 
 yarnmarket-ai/
 ├── services/                    # Microservices
 │   ├── webhook-handler/        # Go service for WhatsApp webhooks
-│   ├── conversation-engine/    # Python FastAPI for AI conversations  
+│   ├── conversation-engine/    # Python FastAPI for AI conversations
 │   ├── merchant-api/          # NestJS for merchant operations
 │   └── analytics-service/     # Python service for metrics
 ├── models/                     # AI/ML Models
@@ -38,16 +38,18 @@ yarnmarket-ai/
 ## Quick Start
 
 1. **Setup Environment**:
+
    ```bash
    # Clone and setup
    git clone https://github.com/hellomuba/YarnMarket-AI
    cd yarnmarket-ai
-   
+
    # Install dependencies
    make setup
    ```
 
 2. **Configure WhatsApp**:
+
    - Register WhatsApp Business API
    - Add webhook URL to environment
    - Configure phone number verification
