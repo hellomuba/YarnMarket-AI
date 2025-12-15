@@ -65,8 +65,8 @@ export const Languages = () => {
 
         <div className="mt-16 text-center">
           <p className="text-muted-foreground text-lg mb-6">
-            5 languages supported — covering English and Nigeria's most widely
-            spoken languages
+            5 languages supported — covering English, Pidgin and Nigeria's most
+            widely spoken languages
           </p>
         </div>
       </div>
