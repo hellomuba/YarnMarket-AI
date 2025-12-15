@@ -17,7 +17,7 @@ const features = [
   },
   {
     icon: Globe,
-    title: "100+ Languages",
+    title: "5 Languages",
     description:
       "Communicate with customers in their native language. Automatic translation and language detection powered by AI.",
   },

@@ -44,7 +44,7 @@ const Signup = () => {
                 onClick={() => setActiveTab("signin")}
                 className={`py-2 px-4 rounded-md transition-all ${
                   activeTab === "signin"
-                    ? "bg-background shadow-sm font-medium"
+                    ? "bg-primary text-primary-foreground shadow-sm font-medium"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -54,7 +54,7 @@ const Signup = () => {
                 onClick={() => setActiveTab("signup")}
                 className={`py-2 px-4 rounded-md transition-all ${
                   activeTab === "signup"
-                    ? "bg-background shadow-sm font-medium"
+                    ? "bg-primary text-primary-foreground shadow-sm font-medium"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >

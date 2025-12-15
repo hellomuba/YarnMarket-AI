@@ -11,24 +11,36 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <Link to="/" className="flex items-center">
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-green-600">
               YarnMarket AI
             </h1>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-foreground/80 hover:text-foreground transition-colors">
+            <a
+              href="#features"
+              className="text-foreground/80 hover:text-foreground transition-colors"
+            >
               Features
             </a>
-            <a href="#languages" className="text-foreground/80 hover:text-foreground transition-colors">
+            <a
+              href="#languages"
+              className="text-foreground/80 hover:text-foreground transition-colors"
+            >
               Languages
             </a>
-            <a href="#integrations" className="text-foreground/80 hover:text-foreground transition-colors">
+            <a
+              href="#integrations"
+              className="text-foreground/80 hover:text-foreground transition-colors"
+            >
               Integrations
             </a>
-            <a href="#pricing" className="text-foreground/80 hover:text-foreground transition-colors">
+            <a
+              href="#pricing"
+              className="text-foreground/80 hover:text-foreground transition-colors"
+            >
               Pricing
             </a>
           </div>
@@ -58,16 +70,28 @@ export const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
-              <a href="#features" className="text-foreground/80 hover:text-foreground transition-colors py-2">
+              <a
+                href="#features"
+                className="text-foreground/80 hover:text-foreground transition-colors py-2"
+              >
                 Features
               </a>
-              <a href="#languages" className="text-foreground/80 hover:text-foreground transition-colors py-2">
+              <a
+                href="#languages"
+                className="text-foreground/80 hover:text-foreground transition-colors py-2"
+              >
                 Languages
               </a>
-              <a href="#integrations" className="text-foreground/80 hover:text-foreground transition-colors py-2">
+              <a
+                href="#integrations"
+                className="text-foreground/80 hover:text-foreground transition-colors py-2"
+              >
                 Integrations
               </a>
-              <a href="#pricing" className="text-foreground/80 hover:text-foreground transition-colors py-2">
+              <a
+                href="#pricing"
+                className="text-foreground/80 hover:text-foreground transition-colors py-2"
+              >
                 Pricing
               </a>
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
@@ -75,10 +99,12 @@ export const Navbar = () => {
                   <ThemeToggle />
                 </div>
                 <Link to="/signup" className="w-full">
-                  <Button variant="ghost" className="w-full">Sign In</Button>
+                  <Button variant="ghost" className="w-full">
+                    Sign In
+                  </Button>
                 </Link>
                 <Link to="/signup" className="w-full">
-                  <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+                  <Button className="w-full bg-[#16a249] hover:opacity-90 transition-opacity">
                     Start Free Now
                   </Button>
                 </Link>

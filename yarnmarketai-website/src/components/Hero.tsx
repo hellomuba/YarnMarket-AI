@@ -40,7 +40,7 @@ export const Hero = () => {
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             Sell More With
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
-              YarnMarket AI Multilingual Platform
+              YarnMarket AI Multilingual Conversational Platform
             </span>
           </h1>
 
@@ -76,12 +76,12 @@ export const Hero = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto mb-8">
             <div className="p-6 rounded-2xl bg-gradient-card border border-border backdrop-blur-sm">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Globe className="text-primary" size={24} />
               </div>
-              <div className="text-3xl font-bold mb-1">100+</div>
+              <div className="text-3xl font-bold mb-1">5</div>
               <div className="text-sm text-muted-foreground">
                 Languages Supported
               </div>
