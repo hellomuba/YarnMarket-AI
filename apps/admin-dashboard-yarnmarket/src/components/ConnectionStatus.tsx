@@ -28,7 +28,8 @@ export default function ConnectionStatus({ className = '' }: ConnectionStatusPro
           setStatus('connected');
         } else {
           // Try to reach the real API
-          const response = await fetch('/api/health', {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8005';
+          const response = await fetch(`${apiUrl}/health`, {
             signal: controller.signal,
             method: 'GET',
             headers: {
@@ -37,7 +38,7 @@ export default function ConnectionStatus({ className = '' }: ConnectionStatusPro
           });
 
           clearTimeout(timeoutId);
-          
+
           if (response.ok) {
             setStatus('connected');
           } else {
