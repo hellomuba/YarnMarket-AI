@@ -88,9 +88,13 @@ export default function ConversationTester() {
           }))
       }
 
+      console.log('Sending payload:', JSON.stringify(payload, null, 2))
+
       const result = await axios.post(`${engineUrl}/conversation/process`, payload, {
         timeout: 30000,
       })
+
+      console.log('API Response:', JSON.stringify(result.data, null, 2))
 
       // Update user message status
       setMessages(prev => prev.map(m =>
@@ -101,14 +105,18 @@ export default function ConversationTester() {
       const assistantMessage: Message = {
         id: `assistant_${Date.now()}`,
         role: 'assistant',
-        content: result.data.response || result.data.message || 'No response',
+        content: result.data.text || result.data.response || result.data.message || 'No response',
         timestamp: new Date(),
         status: 'sent'
       }
 
       setMessages(prev => [...prev, assistantMessage])
     } catch (err: any) {
-      const errorDetail = err.response?.data?.detail || err.message || 'Failed to connect to conversation engine'
+      console.error('Full error object:', err)
+      console.error('Error response:', err.response?.data)
+      console.error('Error status:', err.response?.status)
+
+      const errorDetail = err.response?.data?.detail || err.response?.data?.message || err.message || 'Failed to connect to conversation engine'
 
       // Update user message status to error
       setMessages(prev => prev.map(m =>

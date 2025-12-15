@@ -30,6 +30,44 @@ class Settings(BaseSettings):
         default=None,
         description="OpenAI API key for GPT-4 fallback"
     )
+    moonshot_api_key: Optional[str] = Field(
+        default=None,
+        description="Moonshot AI (Kimi) API key"
+    )
+
+    # LLM Provider Settings
+    primary_llm: str = Field(
+        default="kimi-k2",
+        description="Primary LLM to use (kimi-k2, gpt-4o-mini, etc.)"
+    )
+    fallback_llm: str = Field(
+        default="gpt-4o-mini",
+        description="Fallback LLM if primary fails"
+    )
+    kimi_model: str = Field(
+        default="moonshot-v1-128k",
+        description="Kimi model version to use"
+    )
+    gpt_model: str = Field(
+        default="gpt-4o-mini",
+        description="GPT model version to use"
+    )
+    moonshot_api_base: str = Field(
+        default="https://api.moonshot.cn/v1",
+        description="Moonshot API base URL"
+    )
+    enable_llm_fallback: bool = Field(
+        default=True,
+        description="Enable automatic fallback to secondary LLM on failure"
+    )
+    llm_max_retries: int = Field(
+        default=3,
+        description="Maximum retries for LLM requests"
+    )
+    llm_request_timeout: float = Field(
+        default=30.0,
+        description="Timeout for LLM requests in seconds"
+    )
     
     # Model Settings
     model_path: str = Field(

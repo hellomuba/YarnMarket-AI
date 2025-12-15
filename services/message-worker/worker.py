@@ -81,17 +81,22 @@ class MessageWorker:
             try:
                 # Parse message body
                 body = json.loads(message.body.decode())
-                logger.info(f"Processing message from {body.get('from')}: {body.get('text', '')[:50]}")
+                logger.info(f"Processing message from {body.get('from')}: {body.get('content', '')[:50]}")
 
                 # Prepare request for conversation engine
+                # Build message object matching ConversationRequest schema
+                message_obj = {
+                    "id": body.get("message_id"),
+                    "from": body.get("from"),
+                    "timestamp": body.get("timestamp"),
+                    "type": body.get("type", "text"),
+                    "text": body.get("content", "")  # webhook sends 'content', conversation-engine expects 'text'
+                }
+
                 conversation_request = {
                     "merchant_id": body.get("merchant_id"),
                     "customer_phone": body.get("from"),
-                    "message": body.get("text", ""),
-                    "message_type": body.get("type", "text"),
-                    "audio_url": body.get("audio_url"),
-                    "image_url": body.get("image_url"),
-                    "timestamp": body.get("timestamp")
+                    "message": message_obj
                 }
 
                 # Call conversation engine
