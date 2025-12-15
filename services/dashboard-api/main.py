@@ -93,7 +93,7 @@ async def get_merchants():
         async with db_pool.acquire() as conn:
             rows = await conn.fetch("""
                 SELECT
-                    id, name, email, phone, business_name,
+                    id, name, email, phone, phone_number, business_name,
                     whatsapp_number, status, created_at, updated_at
                 FROM merchants
                 ORDER BY created_at DESC
@@ -114,16 +114,21 @@ async def create_merchant(merchant_data: dict):
 
     try:
         async with db_pool.acquire() as conn:
+            # Get phone value - use phone or whatsapp_number
+            phone_value = merchant_data.get("phone") or merchant_data.get("whatsapp_number")
+            whatsapp_value = merchant_data.get("whatsapp_number") or merchant_data.get("phone")
+
             row = await conn.fetchrow("""
-                INSERT INTO merchants (name, email, phone, business_name, whatsapp_number, status)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING id, name, email, phone, business_name, whatsapp_number, status, created_at
+                INSERT INTO merchants (name, email, phone, phone_number, business_name, whatsapp_number, status)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                RETURNING id, name, email, phone, phone_number, business_name, whatsapp_number, status, created_at
             """,
                 merchant_data.get("name"),
                 merchant_data.get("email"),
-                merchant_data.get("phone"),
+                phone_value,
+                phone_value,  # Also populate phone_number for webhook compatibility
                 merchant_data.get("business_name"),
-                merchant_data.get("whatsapp_number"),
+                whatsapp_value,
                 merchant_data.get("status", "active")
             )
 
