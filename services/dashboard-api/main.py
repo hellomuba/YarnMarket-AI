@@ -114,9 +114,17 @@ async def create_merchant(merchant_data: dict):
 
     try:
         async with db_pool.acquire() as conn:
-            # Get phone value - use phone or whatsapp_number
-            phone_value = merchant_data.get("phone") or merchant_data.get("whatsapp_number")
-            whatsapp_value = merchant_data.get("whatsapp_number") or merchant_data.get("phone")
+            # Get phone value - support multiple field names from different frontend versions
+            phone_value = (
+                merchant_data.get("phone") or
+                merchant_data.get("contact_phone") or
+                merchant_data.get("whatsapp_number")
+            )
+            whatsapp_value = (
+                merchant_data.get("whatsapp_number") or
+                merchant_data.get("phone") or
+                merchant_data.get("contact_phone")
+            )
 
             row = await conn.fetchrow("""
                 INSERT INTO merchants (name, email, phone, phone_number, business_name, whatsapp_number, status)
